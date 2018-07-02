@@ -1,0 +1,8 @@
+## Interface: 80000
+## Author: Sanex (Arathor EU)
+## Title: Already Known?
+## Version: @project-version@
+## Notes: Puts green/blue/yellow/cyan/purple tint on already known scrolls/pets/other learnable items on vendors
+## SavedVariables: AlreadyKnownSettings
+
+AlreadyKnown.lua
