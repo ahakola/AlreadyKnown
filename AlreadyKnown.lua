@@ -15,6 +15,8 @@ local specialItems = { -- Items needing special treatment
 	[152964] = { 141605, 11, 269 } -- 269 for Flute applied Whistle, 257 (or anything else than 269) for pre-apply Whistle
 }
 
+local isClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
+
 -- Tooltip and scanning by Phanx @ http://www.wowinterface.com/forums/showthread.php?p=271406
 -- Search string by Phanx @ https://github.com/Phanx/BetterBattlePetTooltip/blob/master/Addon.lua
 local S_PET_KNOWN = strmatch(_G.ITEM_PET_KNOWN, "[^%(]+")
@@ -50,14 +52,16 @@ local function _checkIfKnown(itemLink)
 		return false -- Item is specialItem, but data isn't special
 	end
 
-	if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
-		local _, battlepetID = strsplit(":", itemLink)
-		if C_PetJournal.GetNumCollectedInfo(battlepetID) > 0 then
-			if db.debug and not knownTable[itemLink] then print(format("%d - BattlePet: %s %d", itemID, battlepetID, C_PetJournal.GetNumCollectedInfo(battlepetID))) end
-			knownTable[itemLink] = true -- Mark as known for later use
-			return true -- Battlepet is collected
+	if not isClassic then -- No Pet Journal in Classic
+		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
+			local _, battlepetID = strsplit(":", itemLink)
+			if C_PetJournal.GetNumCollectedInfo(battlepetID) > 0 then
+				if db.debug and not knownTable[itemLink] then print(format("%d - BattlePet: %s %d", itemID, battlepetID, C_PetJournal.GetNumCollectedInfo(battlepetID))) end
+				knownTable[itemLink] = true -- Mark as known for later use
+				return true -- Battlepet is collected
+			end
+			return false -- Battlepet is uncollected... or something went wrong
 		end
-		return false -- Battlepet is uncollected... or something went wrong
 	end
 
 	scantip:ClearLines()
