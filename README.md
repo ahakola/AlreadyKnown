@@ -1,10 +1,12 @@
+[![Build Status](https://travis-ci.com/ahakola/AlreadyKnown.svg?branch=master)](https://travis-ci.com/ahakola/AlreadyKnown)
+
 # Already Known?
 
 Puts green, blue, yellow, cyan or purple tint on already known scrolls/pets/other learnable items on vendors and AH.
 
 Simple and small addon to color already known items on vendor and AH frames. Works at least on profession designs/patterns/etc, garrison plans, toys, mounts, pets and equipment blueprints.
 
-Default color is green, but try /alreadyknown or /ak ingame to change the tint color.
+Default color is green, but try `/alreadyknown` or `/ak` ingame to change the tint color.
 
 Known issues:
 

@@ -31,7 +31,7 @@ local function _checkIfKnown(itemLink)
 
 	local itemID = tonumber(itemLink:match("item:(%d+)"))
 	if itemID and questItems[itemID] then -- Check if item is a quest item.
-		if IsQuestFlaggedCompleted(questItems[itemID]) then -- Check if the quest for item is already done.
+		if ((isClassic) and IsQuestFlaggedCompleted(questItems[itemID])) or ((not isClassic) and C_QuestLog.IsQuestFlaggedCompleted(questItems[itemID])) then -- Check if the quest for item is already done.
 			if db.debug and not knownTable[itemLink] then print(format("%d - QuestItem", itemID)) end
 			knownTable[itemLink] = true -- Mark as known for later use
 			return true -- This quest item is already known
@@ -75,7 +75,10 @@ local function _checkIfKnown(itemLink)
 			if db.debug and not knownTable[itemLink] then print(format("%d - Tip %d: %s (%s / %s)", itemID, i, tostring(text), text == _G.ITEM_SPELL_KNOWN and "true" or "false", strmatch(text, S_PET_KNOWN) and "true" or "false")) end
 			--knownTable[itemLink] = true -- Mark as known for later use
 			--return true -- Item is known and collected
-			if lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
+			if isClassic then -- Fix for Classic, hope this covers all the cases.
+				knownTable[itemLink] = true -- Mark as known for later use
+				return true -- Item is known and collected
+			elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
 				knownTable[itemLink] = true -- Mark as known for later use
 			end
 		elseif text == _G.TOY and _G["AKScanningTooltipTextLeft"..i + 2] and _G["AKScanningTooltipTextLeft"..i + 2]:GetText() == _G.ITEM_SPELL_KNOWN then
