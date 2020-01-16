@@ -92,6 +92,7 @@ local function _checkIfKnown(itemLink)
 end
 
 local function _hookAH() -- Most of this found from AddOns/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
+	if (not isClassic) then return end -- Retail 8.3 changed the AH and I haven't figured out yet how to fix this for the new system
 	local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
 
 	for i=1, _G.NUM_BROWSE_TO_DISPLAY do
