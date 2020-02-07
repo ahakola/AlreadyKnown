@@ -34,6 +34,9 @@ local containerItems = { -- These items are containers containing items we might
 		21733, -- Schematic: Large Blue Rocket Cluster
 		21734, -- Schematic: Large Green Rocket Cluster
 		21735 -- Schematic: Large Red Rocket Cluster
+	},
+	[128319] = { -- Void-Shrouded Satchel
+		128318 -- Touch of the Void
 	}
 }
 
