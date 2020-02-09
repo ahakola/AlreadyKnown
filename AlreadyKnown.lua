@@ -147,7 +147,7 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 	local numResults = self.getNumEntries()
 
 	local buttons = HybridScrollFrame_GetButtons(self.ScrollFrame)
-	local buttonCount = #buttons
+	local buttonCount = buttons and #buttons or 0
 	local offset = self:GetScrollOffset()
 	local populateCount = math.min(buttonCount, numResults)
 	for i = 1, buttonCount do
