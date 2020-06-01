@@ -263,6 +263,11 @@ local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankU
 			SetItemButtonNormalTextureVertexColor(button, 0.9*db.r, 0.9*db.g, 0.9*db.b)
 
 			SetItemButtonDesaturated(button, db.monochrome)
+		else
+			SetItemButtonTextureVertexColor(button, 1, 1, 1)
+			SetItemButtonNormalTextureVertexColor(button, 1, 1, 1)
+
+			SetItemButtonDesaturated(button, false)
 		end
 	end
 end
