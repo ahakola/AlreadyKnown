@@ -56,6 +56,9 @@ end
 -- Search string by Phanx @ https://github.com/Phanx/BetterBattlePetTooltip/blob/master/Addon.lua
 local S_PET_KNOWN = strmatch(_G.ITEM_PET_KNOWN, "[^%(]+")
 
+-- Construct your search patterns based on the existing global strings:
+local S_ITEM_MIN_LEVEL = "^" .. gsub(_G.ITEM_MIN_LEVEL, "%%d", "(%%d+)")
+
 local scantip = CreateFrame("GameTooltip", "AKScanningTooltip", nil, "GameTooltipTemplate")
 scantip:SetOwner(UIParent, "ANCHOR_NONE")
 
@@ -129,6 +132,14 @@ local function _checkIfKnown(itemLink)
 				return true -- Item is known and collected
 			elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
 				knownTable[itemLink] = true -- Mark as known for later use
+			end
+		elseif strmatch(text, S_ITEM_MIN_LEVEL) then
+			if db.debug and not knownTable[itemLink] then Print("%d - Level %d/%d", itemId, strmatch(text, S_ITEM_MIN_LEVEL), UnitLevel("player")) end
+			-- We found "Requires Level %d" item-line
+			local minLevel = tonumber(strmatch(text, S_ITEM_MIN_LEVEL))
+			if minLevel > 0 and minLevel <= UnitLevel("player") then -- Check if we have at least the required minimum level to use the item
+				knownTable[itemLink] = minLevel
+				return true
 			end
 		elseif text == _G.TOY and _G["AKScanningTooltipTextLeft"..i + 2] and _G["AKScanningTooltipTextLeft"..i + 2]:GetText() == _G.ITEM_SPELL_KNOWN then
 			-- Check if items is Toy already known
@@ -280,8 +291,9 @@ local alreadyHookedAddOns = {
 }
 local f = CreateFrame("Frame")
 f:RegisterEvent("ADDON_LOADED")
-f:SetScript("OnEvent", function(self, event, addOnName)
-	if event == "ADDON_LOADED" and alreadyHookedAddOns[addOnName] == false then
+f:SetScript("OnEvent", function(self, event, ...)
+	if event == "ADDON_LOADED" and alreadyHookedAddOns[(...)] == false then
+		local addOnName = ...
 		if addOnName == "Blizzard_AuctionHouseUI" then -- New AH
 			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "RefreshScrollFrame", _hookNewAH)
 
@@ -309,6 +321,8 @@ f:SetScript("OnEvent", function(self, event, addOnName)
 			end
 
 			hooksecurefunc("MerchantFrame_UpdateMerchantInfo", _hookMerchant)
+
+			self:RegisterEvent("PLAYER_LEVEL_UP")
 		end
 		alreadyHookedAddOns[addOnName] = true -- Mark addOnName as hooked
 
@@ -324,6 +338,15 @@ f:SetScript("OnEvent", function(self, event, addOnName)
 			self:UnregisterEvent(event)
 		end
 		if db.debug then Print("ADDON_LOADED:", alreadyHookedAddOns[ADDON_NAME], alreadyHookedAddOns["Blizzard_AuctionHouseUI"], alreadyHookedAddOns["Blizzard_AuctionUI"], alreadyHookedAddOns["Blizzard_GuildBankUI"]) end
+
+	elseif event == "PLAYER_LEVEL_UP" then -- Player leveled up
+		local newLevel = ...
+
+		for itemLink, minLevel in pairs(knownTable) do -- Check the saved itemLinks for items we can use now
+			if type(minLevel) == "number" and minLevel <= newLevel then -- We can use this item now, so we take it out of the list
+				knownTable[itemLink] = nil
+			end
+		end
 	end
 end)
 
