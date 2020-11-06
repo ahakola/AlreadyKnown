@@ -152,9 +152,10 @@ local function _checkIfKnown(itemLink)
 	return knownTable[itemLink] and true or false
 end
 
-local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseItemList.lua.lua
+local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua
 	if (isClassic) then return end -- Only for Retail 8.3 and newer
 
+	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#340
 	local numResults = self.getNumEntries()
 
 	local buttons = HybridScrollFrame_GetButtons(self.ScrollFrame)
@@ -197,6 +198,8 @@ end
 
 local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
 	if (not isClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for Classic
+
+	-- https://www.townlong-yak.com/framexml/8.2.5/Blizzard_AuctionUI/Blizzard_AuctionUI.lua#763
 	local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
 
 	for i=1, _G.NUM_BROWSE_TO_DISPLAY do
@@ -236,6 +239,7 @@ local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/
 end
 
 local function _hookMerchant() -- Most of this found from FrameXML/MerchantFrame.lua
+	-- https://www.townlong-yak.com/framexml/9.0.2/MerchantFrame.lua#197
 	for i = 1, _G.MERCHANT_ITEMS_PER_PAGE do
 		local index = (((MerchantFrame.page - 1) * _G.MERCHANT_ITEMS_PER_PAGE) + i)
 		local itemButton = _G["MerchantItem"..i.."ItemButton"]
@@ -258,6 +262,7 @@ local function _hookMerchant() -- Most of this found from FrameXML/MerchantFrame
 end
 
 local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua
+	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#203
 	local tab = GetCurrentGuildBankTab()
 	for i = 1, _G.MAX_GUILDBANK_SLOTS_PER_TAB do
 		index = mod(i, _G.NUM_SLOTS_PER_GUILDBANK_GROUP)
