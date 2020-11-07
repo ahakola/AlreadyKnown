@@ -58,6 +58,7 @@ local S_PET_KNOWN = strmatch(_G.ITEM_PET_KNOWN, "[^%(]+")
 
 -- Construct your search patterns based on the existing global strings:
 local S_ITEM_MIN_LEVEL = "^" .. gsub(_G.ITEM_MIN_LEVEL, "%%d", "(%%d+)")
+local S_ITEM_CLASSES_ALLOWED = "^" .. gsub(_G.ITEM_CLASSES_ALLOWED, "%%s", "(%%a+)")
 
 local scantip = CreateFrame("GameTooltip", "AKScanningTooltip", nil, "GameTooltipTemplate")
 scantip:SetOwner(UIParent, "ANCHOR_NONE")
@@ -121,6 +122,8 @@ local function _checkIfKnown(itemLink)
 
 	--for i = 2, scantip:NumLines() do -- Line 1 is always the name so you can skip it.
 	local lines = scantip:NumLines()
+	local comboLevelClass = 0
+	local comboLevelTemp = 0
 	for i = 2, lines do -- Line 1 is always the name so you can skip it.
 		local text = _G["AKScanningTooltipTextLeft"..i]:GetText()
 		if text == _G.ITEM_SPELL_KNOWN or strmatch(text, S_PET_KNOWN) then
@@ -137,15 +140,38 @@ local function _checkIfKnown(itemLink)
 			if db.debug and not knownTable[itemLink] then Print("%d - Level %d/%d", itemId, strmatch(text, S_ITEM_MIN_LEVEL), UnitLevel("player")) end
 			-- We found "Requires Level %d" item-line
 			local minLevel = tonumber(strmatch(text, S_ITEM_MIN_LEVEL))
-			if minLevel > 0 and minLevel <= UnitLevel("player") then -- Check if we have at least the required minimum level to use the item
-				knownTable[itemLink] = minLevel
-				return true
+				
+			if minLevel > 0 and minLevel <= UnitLevel("player") then -- Check if we have at least the required minimum level to use the item and allowed class
+				--knownTable[itemLink] = minLevel
+				--return true
+				comboLevelClass = comboLevelClass + 1
+				comboLevelTemp = minLevel
+			end
+		elseif strmatch(text, S_ITEM_CLASSES_ALLOWED) then
+			if db.debug and not knownTable[itemLink] then Print("%d - Classes %s/%s", itemId, strmatch(text, S_ITEM_CLASSES_ALLOWED), UnitClass("player")) end
+			-- We found "Classes: %s" item-line
+			local itemClassesAllowed = {}
+			for k, v in pairs({ strsplit(",", strmatch(text, S_ITEM_CLASSES_ALLOWED)) }) do
+				if v then
+					itemClassesAllowed[strtrim(v)] = true
+				end
+			end
+
+			if itemClassesAllowed[UnitClass("player")] then
+				comboLevelClass = comboLevelClass + 1
 			end
 		elseif text == _G.TOY and _G["AKScanningTooltipTextLeft"..i + 2] and _G["AKScanningTooltipTextLeft"..i + 2]:GetText() == _G.ITEM_SPELL_KNOWN then
 			-- Check if items is Toy already known
 			if db.debug and not knownTable[itemLink] then Print("%d - Toy %d", itemId, i) end
 			knownTable[itemLink] = true
 		end
+	end
+
+	if comboLevelClass > 1 then
+		if db.debug and not knownTable[itemLink] then Print("comboLevelClass %d for %d.", comboLevelClass, itemId) end
+		-- We matched level requirements and allowed classes
+
+		--knownTable[itemLink] = comboLevelTemp
 	end
 
 	--return false -- Item is not known, uncollected... or something went wrong
