@@ -3,12 +3,38 @@ local _G = _G
 local knownTable = {} -- Save known items for later use
 local db
 local questItems = { -- Quest items and matching quests
+	-- WoD
 	-- Equipment Blueprint: Tuskarr Fishing Net
 	[128491] = 39359, -- Alliance
 	[128251] = 39359, -- Horde
 	-- Equipment Blueprint: Unsinkable
 	[128250] = 39358, -- Alliance
 	[128489] = 39358, -- Horde
+	-- Shadowlands
+	-- Soulshapes
+	[181313] = 62420, -- Snapper Soul
+	[181314] = 62421, -- Gulper Soul
+	[182165] = 62422, -- Ardenmoth Soul
+	[182166] = 62423, -- Ursine soul
+	-- [182167] = 0, -- Cobra Sape
+	[182168] = 62424, -- Crane Soul
+	[182169] = 62425, -- Veilwing Soul
+	[182170] = 62426, -- Gryphon Soul
+	[182171] = 62427, -- Hippogryph Soul
+	[182172] = 62428, -- Equine Soul
+	-- [182173] = 0, -- Hyena Sape
+	[182174] = 62429, -- Leonine Soul
+	[182175] = 62430, -- Moose Soul
+	[182176] = 62431, -- Shadowstalker Soul
+	[182177] = 62432, -- Owlcat Soul
+	[182178] = 62433, -- Raptor Soul
+	[182179] = 62434, -- Runestag Soul
+	[182180] = 62435, -- Stag Soul
+	[182181] = 62437, -- Tiger soul
+	[182182] = 62438, -- Lupine Soul
+	[182183] = 62439, -- Wolfhawk Soul
+	[182184] = 62440, -- Wyvern Soul
+	[182185] = 62436, -- Shrieker Soul
 }
 local specialItems = { -- Items needing special treatment
 	-- Krokul Flute -> Flight Master's Whistle
