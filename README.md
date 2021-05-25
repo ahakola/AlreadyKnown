@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/ahakola/AlreadyKnown.svg?branch=master)](https://travis-ci.com/ahakola/AlreadyKnown)
-
 # Already Known?
 
 Puts green, blue, yellow, cyan or purple tint on already known scrolls/pets/other learnable items on vendors and AH.
