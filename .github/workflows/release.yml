@@ -30,4 +30,4 @@ jobs:
       - name: Package and release for BCClassic
         uses: BigWigsMods/packager@v1
         with:
-          args: -g bc -p 88589
+          args: -g bcc -p 88589
