@@ -11,7 +11,7 @@ local questItems = { -- Quest items and matching quests
 	[128250] = 39358, -- Alliance
 	[128489] = 39358, -- Horde
 	-- Shadowlands
-	-- Soulshapes
+	-- Soulshapes (Data by Dairyman @ Github)
 	[181313] = 62420, -- Snapper Soul
 	[181314] = 62421, -- Gulper Soul
 	[182165] = 62422, -- Ardenmoth Soul
@@ -67,6 +67,7 @@ local containerItems = { -- These items are containers containing items we might
 }
 
 local isClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
+local isBCClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 
 local function Print(text, ...)
 	if text then
@@ -205,7 +206,7 @@ local function _checkIfKnown(itemLink)
 end
 
 local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua
-	if (isClassic) then return end -- Only for Retail 8.3 and newer
+	if (isClassic or isBCClassic) then return end -- Only for Retail 8.3 and newer
 
 	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#340
 	local numResults = self.getNumEntries()
@@ -249,7 +250,7 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 end
 
 local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
-	if (not isClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for Classic
+	if (not isClassic) or (not isBCClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for Classic and BCClassic
 
 	-- https://www.townlong-yak.com/framexml/8.2.5/Blizzard_AuctionUI/Blizzard_AuctionUI.lua#763
 	local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
@@ -370,9 +371,11 @@ f:SetScript("OnEvent", function(self, event, ...)
 			end
 			db = AlreadyKnownSettings
 
-			if isClassic then -- These weren't/aren't in the Classic
+			if isClassic or isBCClassic then -- These weren't/aren't in the Classic
 				alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = nil
-				alreadyHookedAddOns["Blizzard_GuildBankUI"] = nil
+				if (not isBCClassic) then -- GuildBank was in TBC
+					alreadyHookedAddOns["Blizzard_GuildBankUI"] = nil
+				end
 			else -- These aren't in the Retail anymore
 				alreadyHookedAddOns["Blizzard_AuctionUI"] = nil
 			end
