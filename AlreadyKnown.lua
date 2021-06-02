@@ -100,7 +100,7 @@ local function _checkIfKnown(itemLink)
 	-- How to handle Pet Cages inside GBanks? They look like this and don't have any information about the pet inside:
 	-- |cff0070dd|Hitem:82800::::::::120:269::::::|h[Pet Cage]|h|r
 	if itemId and questItems[itemId] then -- Check if item is a quest item.
-		if ((isClassic) and IsQuestFlaggedCompleted(questItems[itemId])) or ((not isClassic) and C_QuestLog.IsQuestFlaggedCompleted(questItems[itemId])) then -- Check if the quest for item is already done.
+		if (isClassic and IsQuestFlaggedCompleted(questItems[itemId])) or ((not isClassic) and C_QuestLog.IsQuestFlaggedCompleted(questItems[itemId])) then -- Check if the quest for item is already done.
 			if db.debug and not knownTable[itemLink] then Print("%d - QuestItem", itemId) end
 			knownTable[itemLink] = true -- Mark as known for later use
 			return true -- This quest item is already known
@@ -132,7 +132,7 @@ local function _checkIfKnown(itemLink)
 		return (knownCount == totalCount)
 	end
 
-	if not isClassic then -- No Pet Journal in Classic
+	if not (isClassic or isBCClassic) then -- No Pet Journal in (BC)Classic
 		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
 			local _, battlepetId = strsplit(":", itemLink)
 			if C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
@@ -154,10 +154,10 @@ local function _checkIfKnown(itemLink)
 	for i = 2, lines do -- Line 1 is always the name so you can skip it.
 		local text = _G["AKScanningTooltipTextLeft"..i]:GetText()
 		if text == _G.ITEM_SPELL_KNOWN or strmatch(text, S_PET_KNOWN) then
-			if db.debug and not knownTable[itemLink] then Print("%d - Tip %d/%d: %s (%s / %s)", itemID, i, lines, tostring(text), text == _G.ITEM_SPELL_KNOWN and "true" or "false", strmatch(text, S_PET_KNOWN) and "true" or "false") end
+			if db.debug and not knownTable[itemLink] then Print("%d - Tip %d/%d: %s (%s / %s)", itemId, i, lines, tostring(text), text == _G.ITEM_SPELL_KNOWN and "true" or "false", strmatch(text, S_PET_KNOWN) and "true" or "false") end
 			--knownTable[itemLink] = true -- Mark as known for later use
 			--return true -- Item is known and collected
-			if isClassic then -- Fix for Classic, hope this covers all the cases.
+			if isClassic or isBCClassic then -- Fix for (BC)Classic, hope this covers all the cases.
 				knownTable[itemLink] = true -- Mark as known for later use
 				return true -- Item is known and collected
 			elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
@@ -206,7 +206,7 @@ local function _checkIfKnown(itemLink)
 end
 
 local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua
-	if (isClassic or isBCClassic) then return end -- Only for Retail 8.3 and newer
+	if isClassic or isBCClassic then return end -- Only for Retail 8.3 and newer
 
 	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#340
 	local numResults = self.getNumEntries()
@@ -250,7 +250,7 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 end
 
 local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
-	if (not isClassic) or (not isBCClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for Classic and BCClassic
+	if not (isClassic or isBCClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for (BC)Classic
 
 	-- https://www.townlong-yak.com/framexml/8.2.5/Blizzard_AuctionUI/Blizzard_AuctionUI.lua#763
 	local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
@@ -373,7 +373,7 @@ f:SetScript("OnEvent", function(self, event, ...)
 
 			if isClassic or isBCClassic then -- These weren't/aren't in the Classic
 				alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = nil
-				if (not isBCClassic) then -- GuildBank was in TBC
+				if not isBCClassic then -- GuildBank was in BCClassic (at least in the end it will be)
 					alreadyHookedAddOns["Blizzard_GuildBankUI"] = nil
 				end
 			else -- These aren't in the Retail anymore
