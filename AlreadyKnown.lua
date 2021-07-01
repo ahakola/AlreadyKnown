@@ -373,7 +373,7 @@ f:SetScript("OnEvent", function(self, event, ...)
 
 			if isClassic or isBCClassic then -- These weren't/aren't in the Classic
 				alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = nil
-				if not isBCClassic then -- GuildBank was in BCClassic (at least in the end it will be)
+				if not isBCClassic then -- GuildBank should be in BCClassic (at least in the end of TBC it was)
 					alreadyHookedAddOns["Blizzard_GuildBankUI"] = nil
 				end
 			else -- These aren't in the Retail anymore

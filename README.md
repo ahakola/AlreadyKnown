@@ -1,5 +1,7 @@
 # Already Known?
 
+![Release](https://github.com/ahakola/AlreadyKnown/actions/workflows/release.yml/badge.svg)
+
 https://www.curseforge.com/wow/addons/alreadyknown
 
 Puts green, blue, yellow, cyan or purple tint on already known scrolls/pets/other learnable items on vendors and AH.
