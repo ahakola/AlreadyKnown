@@ -1,6 +1,8 @@
 local ADDON_NAME = ...
 local _G = _G
-local knownTable = {} -- Save known items for later use
+local knownTable = {
+	-- ["|cffa335ee|Hitem:22450::::::::53:::::::::|h[Void Crystal]|h|r"] = true -- Debug (Void Crystal)
+} -- Save known items for later use
 local db
 local questItems = { -- Quest items and matching quests
 	-- WoD
@@ -315,26 +317,40 @@ local function _hookMerchant() -- Most of this found from FrameXML/MerchantFrame
 end
 
 local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua
-	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#203
+	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#203 -- Old pre-9.1.5 version
+	-- https://www.townlong-yak.com/framexml/9.1.5/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#135 -- New Mixin-version (BCClassic and 9.1.5 ->)
 	local tab = GetCurrentGuildBankTab()
-	for i = 1, _G.MAX_GUILDBANK_SLOTS_PER_TAB do
-		index = mod(i, _G.NUM_SLOTS_PER_GUILDBANK_GROUP)
+	for i = 1, (_G.MAX_GUILDBANK_SLOTS_PER_TAB or 98) do
+		local index = mod(i, (_G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14))
 		if (index == 0) then
-			index = _G.NUM_SLOTS_PER_GUILDBANK_GROUP
+			index = (_G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14)
 		end
-		column = ceil((i - .5) / _G.NUM_SLOTS_PER_GUILDBANK_GROUP)
-		button = _G["GuildBankColumn" .. column .. "Button" .. index]
-		local _ = GetGuildBankItemInfo(tab, i)
+		local column = math.ceil((i - .5) / (_G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14))
+		local button -- Fix this in 9.1.5
+		if isBCClassic then
+			button = GuildBankFrame.Columns[column].Buttons[index] -- New Mixin-version
+		else
+			button = _G["GuildBankColumn" .. column .. "Button" .. index] -- Old pre 9.1.5 -version
+		end
+		--local _ = GetGuildBankItemInfo(tab, i)
 		local itemLink = GetGuildBankItemLink(tab, i)
 
 		if itemLink and _checkIfKnown(itemLink) then
 			SetItemButtonTextureVertexColor(button, 0.9*db.r, 0.9*db.g, 0.9*db.b)
-			SetItemButtonNormalTextureVertexColor(button, 0.9*db.r, 0.9*db.g, 0.9*db.b)
+			if isBCClassic then -- Mixin version doesn't have names for the buttons and SetItemButtonNormalTextureVertexColor requires buttons to have names to work
+				button:GetNormalTexture():SetVertexColor(0.9*db.r, 0.9*db.g, 0.9*db.b)
+			else
+				SetItemButtonNormalTextureVertexColor(button, 0.9*db.r, 0.9*db.g, 0.9*db.b)
+			end
 
 			SetItemButtonDesaturated(button, db.monochrome)
 		else
 			SetItemButtonTextureVertexColor(button, 1, 1, 1)
-			SetItemButtonNormalTextureVertexColor(button, 1, 1, 1)
+			if isBCClassic then
+				button:GetNormalTexture():SetVertexColor(1, 1, 1)
+			else
+				SetItemButtonNormalTextureVertexColor(button, 1, 1, 1)
+			end
 
 			SetItemButtonDesaturated(button, false)
 		end
@@ -354,6 +370,7 @@ f:SetScript("OnEvent", function(self, event, ...)
 		local addOnName = ...
 		if addOnName == "Blizzard_AuctionHouseUI" then -- New AH
 			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "RefreshScrollFrame", _hookNewAH)
+			alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = true
 
 		elseif addOnName == "Blizzard_AuctionUI" then -- Old AH
 			if IsAddOnLoaded("Auc-Advanced") and _G.AucAdvanced.Settings.GetSetting("util.compactui.activated") then
@@ -361,9 +378,15 @@ f:SetScript("OnEvent", function(self, event, ...)
 			else
 				hooksecurefunc("AuctionFrameBrowse_Update", _hookAH)
 			end
+			alreadyHookedAddOns["Blizzard_AuctionUI"] = true
 
 		elseif addOnName == "Blizzard_GuildBankUI" then -- GBank
-			hooksecurefunc("GuildBankFrame_Update", _hookGBank)
+			if isBCClassic then -- New Mixin-version
+				hooksecurefunc(GuildBankFrame, "Update", _hookGBank) -- GuildBankFrameMixin:Update()
+			else -- This should be changed in 9.1.5 to using the Mixin
+				hooksecurefunc("GuildBankFrame_Update", _hookGBank) -- Old pre-9.1.5 -version
+			end
+			alreadyHookedAddOns["Blizzard_GuildBankUI"] = true
 
 		elseif addOnName == ADDON_NAME then -- Self
 			if type(AlreadyKnownSettings) ~= "table" then
@@ -386,7 +409,7 @@ f:SetScript("OnEvent", function(self, event, ...)
 		end
 		alreadyHookedAddOns[addOnName] = true -- Mark addOnName as hooked
 
-		everythingHooked = true
+		local everythingHooked = true
 		for _, hooked in pairs(alreadyHookedAddOns) do -- Check if everything is hooked already
 			if not hooked then -- Something isn't hooked yet, keep on listening
 				everythingHooked = false 
