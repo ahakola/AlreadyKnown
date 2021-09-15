@@ -316,28 +316,40 @@ local function _hookMerchant() -- Most of this found from FrameXML/MerchantFrame
 	end
 end
 
+local AK_SLOTS_PER_TAB = _G.MAX_GUILDBANK_SLOTS_PER_TAB or 98 -- These ain't Globals anymore in the new Mixin version so fallback for hardcoded version
+local AK_SLOTS_PER_GROUP = _G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14
 local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua
-	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#203 -- Old pre-9.1.5 version
+	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#203 -- Old version (Classic and pre-9.1.5)
 	-- https://www.townlong-yak.com/framexml/9.1.5/Blizzard_GuildBankUI/Blizzard_GuildBankUI.lua#135 -- New Mixin-version (BCClassic and 9.1.5 ->)
 	local tab = GetCurrentGuildBankTab()
-	for i = 1, (_G.MAX_GUILDBANK_SLOTS_PER_TAB or 98) do
-		local index = mod(i, (_G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14))
+	for i = 1, AK_SLOTS_PER_TAB do
+		local index = mod(i, AK_SLOTS_PER_GROUP)
 		if (index == 0) then
-			index = (_G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14)
+			index = AK_SLOTS_PER_GROUP
 		end
-		local column = math.ceil((i - .5) / (_G.NUM_SLOTS_PER_GUILDBANK_GROUP or 14))
-		local button -- Fix this in 9.1.5
-		if isBCClassic then
+		local column = math.ceil((i - .5) / AK_SLOTS_PER_GROUP)
+		local button
+		if GuildBankFrameMixin then
 			button = GuildBankFrame.Columns[column].Buttons[index] -- New Mixin-version
 		else
-			button = _G["GuildBankColumn" .. column .. "Button" .. index] -- Old pre 9.1.5 -version
+			button = _G["GuildBankColumn" .. column .. "Button" .. index] -- Old Classic/Pre-9.1.5 -version
 		end
-		--local _ = GetGuildBankItemInfo(tab, i)
+		local texture = GetGuildBankItemInfo(tab, i)
 		local itemLink = GetGuildBankItemLink(tab, i)
+
+		if texture and texture == 132599 then -- Inv_box_petcarrier_01 (BattlePet, itemId 82800)
+			-- Combining the Hook New AH -way and suggestion made by Dairyman @ Github to improve the detection of caged battlepets in GBank
+			scantip:ClearLines()
+			local speciesId = scantip:SetGuildBankItem(tab, i)
+
+			if speciesId and speciesId > 0 then
+				itemLink = format("|Hbattlepet:%d::::::|h[Dummy]|h", speciesId)
+			end
+		end
 
 		if itemLink and _checkIfKnown(itemLink) then
 			SetItemButtonTextureVertexColor(button, 0.9*db.r, 0.9*db.g, 0.9*db.b)
-			if isBCClassic then -- Mixin version doesn't have names for the buttons and SetItemButtonNormalTextureVertexColor requires buttons to have names to work
+			if GuildBankFrameMixin then -- Mixin version doesn't have names for the buttons and SetItemButtonNormalTextureVertexColor requires buttons to have names to work
 				button:GetNormalTexture():SetVertexColor(0.9*db.r, 0.9*db.g, 0.9*db.b)
 			else
 				SetItemButtonNormalTextureVertexColor(button, 0.9*db.r, 0.9*db.g, 0.9*db.b)
@@ -346,7 +358,7 @@ local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankU
 			SetItemButtonDesaturated(button, db.monochrome)
 		else
 			SetItemButtonTextureVertexColor(button, 1, 1, 1)
-			if isBCClassic then
+			if GuildBankFrameMixin then
 				button:GetNormalTexture():SetVertexColor(1, 1, 1)
 			else
 				SetItemButtonNormalTextureVertexColor(button, 1, 1, 1)
@@ -381,9 +393,9 @@ f:SetScript("OnEvent", function(self, event, ...)
 			alreadyHookedAddOns["Blizzard_AuctionUI"] = true
 
 		elseif addOnName == "Blizzard_GuildBankUI" then -- GBank
-			if isBCClassic then -- New Mixin-version
+			if GuildBankFrameMixin then -- New Mixin-version for BCClassic/9.1.5 =>
 				hooksecurefunc(GuildBankFrame, "Update", _hookGBank) -- GuildBankFrameMixin:Update()
-			else -- This should be changed in 9.1.5 to using the Mixin
+			else -- Classic/Pre-9.1.5 version not using the Mixin
 				hooksecurefunc("GuildBankFrame_Update", _hookGBank) -- Old pre-9.1.5 -version
 			end
 			alreadyHookedAddOns["Blizzard_GuildBankUI"] = true
