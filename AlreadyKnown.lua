@@ -334,10 +334,11 @@ local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankU
 		else
 			button = _G["GuildBankColumn" .. column .. "Button" .. index] -- Old Classic/Pre-9.1.5 -version
 		end
-		local texture = GetGuildBankItemInfo(tab, i)
+		--local texture = GetGuildBankItemInfo(tab, i)
 		local itemLink = GetGuildBankItemLink(tab, i)
 
-		if texture and texture == 132599 then -- Inv_box_petcarrier_01 (BattlePet, itemId 82800)
+		--if texture and texture == 132599 then -- Inv_box_petcarrier_01 (BattlePet, itemId 82800)
+		if itemLink and itemLink:match("item:82800") then -- Check if item is Caged Battlepet (dummy item 82800)
 			-- Combining the Hook New AH -way and suggestion made by Dairyman @ Github to improve the detection of caged battlepets in GBank
 			scantip:ClearLines()
 			local speciesId = scantip:SetGuildBankItem(tab, i)
