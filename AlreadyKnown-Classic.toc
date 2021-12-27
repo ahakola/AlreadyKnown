@@ -1,4 +1,4 @@
-## Interface: 11307
+## Interface: 11401
 ## Author: Sanex (Arathor EU)
 ## Title: Already Known?
 ## Version: @project-version@
