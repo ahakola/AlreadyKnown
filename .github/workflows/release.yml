@@ -1,4 +1,4 @@
-name: Package and release
+name: Release
 
 on:
   push:
@@ -17,17 +17,17 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v1
 
-      - name: Package and release
+      - name: Create Retail Package
         uses: BigWigsMods/packager@v1
         with:
           args: -p 88589
 
-      - name: Package and release for Classic
+      - name: Create Classic Package
         uses: BigWigsMods/packager@v1
         with:
           args: -g classic -p 88589
 
-      - name: Package and release for BCClassic
+      - name: Create BCClassic Package
         uses: BigWigsMods/packager@v1
         with:
           args: -g bcc -p 88589
