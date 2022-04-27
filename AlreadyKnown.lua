@@ -164,6 +164,7 @@ local function _checkIfKnown(itemLink)
 				return true -- Item is known and collected
 			elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
 				knownTable[itemLink] = true -- Mark as known for later use
+				return true -- Item is known and collected
 			end
 		elseif strmatch(text, S_ITEM_MIN_LEVEL) then
 			if db.debug and not knownTable[itemLink] then Print("%d - Level %d/%d", itemId, strmatch(text, S_ITEM_MIN_LEVEL), UnitLevel("player")) end
@@ -193,6 +194,14 @@ local function _checkIfKnown(itemLink)
 			-- Check if items is Toy already known
 			if db.debug and not knownTable[itemLink] then Print("%d - Toy %d", itemId, i) end
 			knownTable[itemLink] = true
+			return true -- Item is known and collected
+		elseif not (isClassic or isBCClassic) then
+			if text == _G.TRANSMOGRIFY_TOOLTIP_APPEARANCE_KNOWN or text == _G.TRANSMOGRIFY_TOOLTIP_ITEM_UNKNOWN_APPEARANCE_KNOWN then
+				-- Some Shadowlands? transmogs
+				if db.debug and not knownTable[itemLink] then Print("%d - Transmog %d", itemId, i) end
+				knownTable[itemLink] = true
+				return true -- Item is known and collected
+			end
 		end
 	end
 

@@ -1,6 +1,6 @@
 ## Interface: 90200
 ## Interface-Classic: 11402
-## Interface-BCC: 20503
+## Interface-BCC: 20504
 ## Author: Sanex (Arathor EU)
 ## Title: Already Known?
 ## Version: @project-version@
