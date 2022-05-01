@@ -195,10 +195,17 @@ local function _checkIfKnown(itemLink)
 			if db.debug and not knownTable[itemLink] then Print("%d - Toy %d", itemId, i) end
 			knownTable[itemLink] = true
 			return true -- Item is known and collected
-		elseif not (isClassic or isBCClassic) then
-			if text == _G.TRANSMOGRIFY_TOOLTIP_APPEARANCE_KNOWN or text == _G.TRANSMOGRIFY_TOOLTIP_ITEM_UNKNOWN_APPEARANCE_KNOWN then
-				-- Some Shadowlands? transmogs
-				if db.debug and not knownTable[itemLink] then Print("%d - Transmog %d", itemId, i) end
+		elseif text == _G.ITEM_COSMETIC then
+			-- Check if Cosmetic item has already known look (not all of them apparently get the "Already Known"-text added to the tooltip)
+			-- 1 function calls way, don't know if this is the right way, but seems to work according to my limited testing
+			local knownTransmog = C_TransmogCollection.PlayerHasTransmogByItemInfo(itemLink)
+			--[[
+			-- 2 function calls way, should work 100% of the time
+			local appearanceId, sourceId = C_TransmogCollection.GetItemInfo(itemLink)
+			local knownTransmog = C_TransmogCollection.GetSourceInfo(sourceId)
+			]]
+			if knownTransmog then
+				if db.debug and not knownTable[itemLink] then Print("%d - Cosmetic %d", itemId, i) end
 				knownTable[itemLink] = true
 				return true -- Item is known and collected
 			end
@@ -485,6 +492,24 @@ end
 
 SLASH_ALREADYKNOWN1 = "/alreadyknown"
 SLASH_ALREADYKNOWN2 = "/ak"
+StaticPopupDialogs["ALREADYKNOWN_DEBUG"] = {
+	text = "If possible, please kindly disable all tooltip altering addons when copying this information to your bug report.\n\nCheck you have tested the correct item and then copy&paste the debug text from the editbox below, even if the editbox looks empty:\n\n(Use |cffffcc00Ctrl+A|r to select text, |cffffcc00Ctrl+C|r to copy text)\n\nItemTest: %s",
+	button1 = OKAY,
+	showAlert = true,
+	hasEditBox = true,
+	editBoxWidth = 260, --350,
+	OnShow = function (self, data)
+		self.editBox:SetText("Something went wrong!") -- This will be overwritten if everything goes as expected
+	end,
+	EditBoxOnTextChanged = function (self, data) -- careful! 'self' here points to the editbox, not the dialog
+		if self:GetText() ~= data then
+			self:SetText(data)
+		end
+	end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true
+}
 
 SlashCmdList.ALREADYKNOWN = function(...)
 	if (...) == "green" then
@@ -508,11 +533,50 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		db.debug = not db.debug
 		if db.debug then wipe(knownTable) end
 		Print("Debug: %s", (db.debug and "|cff00ff00true|r" or "|cffff0000false|r"))
+	elseif (...) == "itemtest" then -- For getting debug data from people in the future
+		local _, itemLink = _G.GameTooltip:GetItem()
+		local regionTable = {}
+		local regions = { _G.GameTooltip:GetRegions() }
+
+		for i = 1, #regions do
+			local region = regions[i]
+			if region then
+				local regionType = region:GetObjectType()
+				if regionType == "FontString" then
+					local text = region:GetText()
+					if text and #strtrim(text) > 0 then -- Skip lines with just spaces
+						regionTable[#regionTable + 1] = format("%d %s %s %s", i, regionType, tostring(region:GetName()), text)
+					end
+				elseif regionType == "Texture" then
+					local texture = region:GetTexture()
+					local atlas = region:GetAtlas()
+					if (texture or atlas) and region:IsShown() then -- Check if the texture/atlas is set to be shown, because textures are not cleared from tooltip when changing items, just overwritten when needed.
+						regionTable[#regionTable + 1] = format(atlas and "%d %s %s %s / %s" or "%d %s %s %s", i, regionType, tostring(region:GetName()), texture, atlas)
+					end
+				else
+					regionTable[#regionTable + 1] = format("%d !%s! %s", i, regionType, tostring(region:GetName()))
+				end
+			end
+		end
+
+		if #regionTable > 0 then -- We have (some) data!
+			local line = format("ItemTest: %s - Regions: %d/%d - Known: %s\nItemLink: %s", tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
+			for j = 1, #regionTable do
+				line = line .. "\n" .. regionTable[j]
+			end
+			--Print(line)
+			local dialog = StaticPopup_Show("ALREADYKNOWN_DEBUG", tostring(itemLink)) -- Send to dialog for easy copy&paste for end user
+ 			if dialog then
+     			dialog.data = line
+     		end
+		else
+			Print("!!! GameTooltip is empty?")
+		end
 	else
 		Print("/alreadyknown ( green | blue | yellow | cyan | purple | gray | custom | monochrome )")
 	end
 
-	if (...) ~= "" and (...) ~= "custom" and (...) ~= "monochrome" and (...) ~= "debug" then
+	if (...) ~= "" and (...) ~= "custom" and (...) ~= "monochrome" and (...) ~= "debug" and (...) ~= "itemtest" then
 		Print("|cff%s%s|r, Monochrome: %s", _RGBToHex(db.r*255, db.g*255, db.b*255), (...), (db.monochrome and "|cff00ff00true|r" or "|cffff0000false|r"))
 		if db.debug then Print("Debug: |cff00ff00true|r") end
 	end
