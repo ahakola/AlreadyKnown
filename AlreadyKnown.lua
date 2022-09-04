@@ -70,6 +70,7 @@ local containerItems = { -- These items are containers containing items we might
 
 local isClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
 local isBCClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+local isWrathClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC)
 
 local function Print(text, ...)
 	if text then
@@ -134,7 +135,7 @@ local function _checkIfKnown(itemLink)
 		return (knownCount == totalCount)
 	end
 
-	if not (isClassic or isBCClassic) then -- No Pet Journal in (BC)Classic
+	if not (isClassic or isBCClassic or isWrathClassic) then -- No Pet Journal in (BC)Classic
 		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
 			local _, battlepetId = strsplit(":", itemLink)
 			if C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
@@ -159,7 +160,7 @@ local function _checkIfKnown(itemLink)
 			if db.debug and not knownTable[itemLink] then Print("%d - Tip %d/%d: %s (%s / %s)", itemId, i, lines, tostring(text), text == _G.ITEM_SPELL_KNOWN and "true" or "false", strmatch(text, S_PET_KNOWN) and "true" or "false") end
 			--knownTable[itemLink] = true -- Mark as known for later use
 			--return true -- Item is known and collected
-			if isClassic or isBCClassic then -- Fix for (BC)Classic, hope this covers all the cases.
+			if isClassic or isBCClassic or isWrathClassic then -- Fix for (BC)Classic, hope this covers all the cases.
 				knownTable[itemLink] = true -- Mark as known for later use
 				return true -- Item is known and collected
 			elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
@@ -224,7 +225,7 @@ local function _checkIfKnown(itemLink)
 end
 
 local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua
-	if isClassic or isBCClassic then return end -- Only for Retail 8.3 and newer
+	if isClassic or isBCClassic or isWrathClassic then return end -- Only for Retail 8.3 and newer
 
 	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#340
 	local numResults = self.getNumEntries()
@@ -268,7 +269,7 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 end
 
 local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
-	if not (isClassic or isBCClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for (BC)Classic
+	if not (isClassic or isBCClassic or isWrathClassic) then return end -- Retail 8.3 changed the AH, this old one is still used for (BC)Classic
 
 	-- https://www.townlong-yak.com/framexml/8.2.5/Blizzard_AuctionUI/Blizzard_AuctionUI.lua#763
 	local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
@@ -423,7 +424,7 @@ f:SetScript("OnEvent", function(self, event, ...)
 			end
 			db = AlreadyKnownSettings
 
-			if isClassic or isBCClassic then -- These weren't/aren't in the Classic
+			if isClassic or isBCClassic or isWrathClassic then -- These weren't/aren't in the Classic
 				alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = nil
 				if not isBCClassic then -- GuildBank should be in BCClassic (at least in the end of TBC it was)
 					alreadyHookedAddOns["Blizzard_GuildBankUI"] = nil

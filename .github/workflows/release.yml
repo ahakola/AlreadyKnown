@@ -15,19 +15,26 @@ jobs:
 
     steps:
       - name: Clone project
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Create Retail Package
-        uses: BigWigsMods/packager@v1
+        uses: BigWigsMods/packager@v2
         with:
           args: -p 88589
 
       - name: Create Classic Package
-        uses: BigWigsMods/packager@v1
+        uses: BigWigsMods/packager@v2
         with:
           args: -g classic -p 88589
 
       - name: Create BCClassic Package
-        uses: BigWigsMods/packager@v1
+        uses: BigWigsMods/packager@v2
         with:
           args: -g bcc -p 88589
+
+      - name: Create WrathClassic Package
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -g wrath -p 88589
