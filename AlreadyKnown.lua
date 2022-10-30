@@ -68,6 +68,7 @@ local containerItems = { -- These items are containers containing items we might
 	}
 }
 
+local isRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
 local isClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
 local isBCClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 local isWrathClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC)
@@ -226,6 +227,8 @@ end
 
 local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua
 	if isClassic or isBCClassic or isWrathClassic then return end -- Only for Retail 8.3 and newer
+
+	if LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_DRAGONFLIGHT then return end -- !!! Disable AH until I have time to fix it !!!
 
 	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#340
 	local numResults = self.getNumEntries()
