@@ -228,47 +228,36 @@ end
 local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua
 	if isClassic or isBCClassic or isWrathClassic then return end -- Only for Retail 8.3 and newer
 
-	if LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_DRAGONFLIGHT then return end -- !!! Disable AH until I have time to fix it !!!
+	-- Derived from https://www.townlong-yak.com/framexml/10.0.0/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#322
+	self.ScrollBox:ForEachFrame(function(button)
+		--Print(">", button.rowData.itemKey.itemID, button.cells[2].Text:GetText())
+		if button.rowData.itemKey.itemID then
+			local itemLink
+			if button.rowData.itemKey.itemID == 82800 then -- BattlePet
+				itemLink = format("|Hbattlepet:%d::::::|h[Dummy]|h", button.rowData.itemKey.battlePetSpeciesID)
+			else -- Normal item
+				itemLink = format("item:%d", button.rowData.itemKey.itemID)
+			end
 
-	-- https://www.townlong-yak.com/framexml/9.0.2/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#340
-	local numResults = self.getNumEntries()
-
-	local buttons = HybridScrollFrame_GetButtons(self.ScrollFrame)
-	local buttonCount = buttons and #buttons or 0
-	local offset = self:GetScrollOffset()
-	local populateCount = math.min(buttonCount, numResults)
-	for i = 1, buttonCount do
-		local visible = i + offset <= numResults
-		local button = buttons[i]
-		if visible then
-			if button.rowData.itemKey.itemID then
-				local itemLink
-				if button.rowData.itemKey.itemID == 82800 then -- BattlePet
-					itemLink = format("|Hbattlepet:%d::::::|h[Dummy]|h", button.rowData.itemKey.battlePetSpeciesID)
-				else -- Normal item
-					itemLink = format("item:%d", button.rowData.itemKey.itemID)
-				end
-
-				if itemLink and _checkIfKnown(itemLink) then
-					-- Highlight
-					button.SelectedHighlight:Show()
-					button.SelectedHighlight:SetVertexColor(db.r, db.g, db.b)
-					button.SelectedHighlight:SetAlpha(.2)
-					-- Icon
-					button.cells[2].Icon:SetVertexColor(db.r, db.g, db.b)
-					button.cells[2].IconBorder:SetVertexColor(db.r, db.g, db.b)
-					button.cells[2].Icon:SetDesaturated(db.monochrome)
-				else
-					-- Highlight
-					button.SelectedHighlight:SetVertexColor(1, 1, 1)
-					-- Icon
-					button.cells[2].Icon:SetVertexColor(1, 1, 1)
-					button.cells[2].IconBorder:SetVertexColor(1, 1, 1)
-					button.cells[2].Icon:SetDesaturated(false)
-				end
+			if itemLink and _checkIfKnown(itemLink) then
+				-- Highlight
+				button.SelectedHighlight:Show()
+				button.SelectedHighlight:SetVertexColor(db.r, db.g, db.b)
+				button.SelectedHighlight:SetAlpha(.2)
+				-- Icon
+				button.cells[2].Icon:SetVertexColor(db.r, db.g, db.b)
+				button.cells[2].IconBorder:SetVertexColor(db.r, db.g, db.b)
+				button.cells[2].Icon:SetDesaturated(db.monochrome)
+			else
+				-- Highlight
+				button.SelectedHighlight:SetVertexColor(1, 1, 1)
+				-- Icon
+				button.cells[2].Icon:SetVertexColor(1, 1, 1)
+				button.cells[2].IconBorder:SetVertexColor(1, 1, 1)
+				button.cells[2].Icon:SetDesaturated(false)
 			end
 		end
-	end
+	end)
 end
 
 local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
