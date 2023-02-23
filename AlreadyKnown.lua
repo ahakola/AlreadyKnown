@@ -145,8 +145,8 @@ local function _checkTooltipLine(text, i, tooltipTable, itemId, itemLink)
 		Print(">>")
 		knownTable[itemLink] = true
 		return true
-	end
 	]]
+	end
 
 	return false
 end
