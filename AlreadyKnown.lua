@@ -91,8 +91,61 @@ local S_PET_KNOWN = strmatch(_G.ITEM_PET_KNOWN, "[^%(]+")
 local S_ITEM_MIN_LEVEL = "^" .. gsub(_G.ITEM_MIN_LEVEL, "%%d", "(%%d+)")
 local S_ITEM_CLASSES_ALLOWED = "^" .. gsub(_G.ITEM_CLASSES_ALLOWED, "%%s", "(%%a+)")
 
-local scantip = CreateFrame("GameTooltip", "AKScanningTooltip", nil, "GameTooltipTemplate")
-scantip:SetOwner(UIParent, "ANCHOR_NONE")
+local scantip
+if not C_TooltipInfo then
+	scantip = CreateFrame("GameTooltip", "AKScanningTooltip", nil, "GameTooltipTemplate")
+	scantip:SetOwner(UIParent, "ANCHOR_NONE")
+end
+
+local function _checkTooltipLine(text, i, tooltipTable, itemId, itemLink)
+	local lines = (isRetail) and #tooltipTable or tooltipTable
+	local toyLine = (isRetail) and (tooltipTable[i + 2] and tooltipTable[i + 2].leftText) or (_G["AKScanningTooltipTextLeft"..i + 2] and _G["AKScanningTooltipTextLeft"..i + 2]:GetText())
+
+	if text == _G.ITEM_SPELL_KNOWN or strmatch(text, S_PET_KNOWN) then
+		-- Known item or Pet
+		if db.debug then Print("%d - Tip %d/%d: %s (%s / %s)", itemId, i, lines, tostring(text), text == _G.ITEM_SPELL_KNOWN and "true" or "false", strmatch(text, S_PET_KNOWN) and "true" or "false") end
+		--knownTable[itemLink] = true -- Mark as known for later use
+		--return true -- Item is known and collected
+
+		if isClassic or isBCClassic or isWrathClassic then -- Fix for (BC)Classic, hope this covers all the cases.
+			knownTable[itemLink] = true -- Mark as known for later use
+			return true -- Item is known and collected
+		elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
+			knownTable[itemLink] = true -- Mark as known for later use
+			return true -- Item is known and collected
+		end
+
+	elseif text == _G.TOY and toyLine == _G.ITEM_SPELL_KNOWN then
+		-- Check if items is Toy already known
+		if db.debug then Print("%d - Toy %d", itemId, i) end
+		knownTable[itemLink] = true
+		return true -- Item is known and collected
+
+	elseif text == _G.ITEM_COSMETIC then
+		-- Check if Cosmetic item has already known look (not all of them apparently get the "Already Known"-text added to the tooltip)
+		-- 1 function calls way, don't know if this is the right way, but seems to work according to my limited testing
+		local knownTransmog = C_TransmogCollection.PlayerHasTransmogByItemInfo(itemLink)
+		--[[
+		-- 2 function calls way, should work 100% of the time
+		local appearanceId, sourceId = C_TransmogCollection.GetItemInfo(itemLink)
+		local knownTransmog = C_TransmogCollection.GetSourceInfo(sourceId)
+		]]
+		if knownTransmog then
+			if db.debug then Print("%d - Cosmetic %d", itemId, i) end
+			knownTable[itemLink] = true
+			return true -- Item is known and collected
+		end
+
+	-- Debug
+	--[[
+	elseif strmatch(text, "Priest") then -- Retail PTR
+		knownTable[itemLink] = true
+		return true
+	end
+	]]
+
+	return false
+end
 
 local function _checkIfKnown(itemLink)
 	if knownTable[itemLink] then -- Check if we have scanned this item already and it was known then
@@ -148,77 +201,38 @@ local function _checkIfKnown(itemLink)
 		end
 	end
 
-	scantip:ClearLines()
-	scantip:SetHyperlink(itemLink)
+	local midResult = false
+	if C_TooltipInfo then -- Retail in 10.0.2->, maybe comes to Wrath Classic later?
+		local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
 
-	--for i = 2, scantip:NumLines() do -- Line 1 is always the name so you can skip it.
-	local lines = scantip:NumLines()
-	local comboLevelClass = 0
-	local comboLevelTemp = 0
-	for i = 2, lines do -- Line 1 is always the name so you can skip it.
-		local text = _G["AKScanningTooltipTextLeft"..i]:GetText()
-		if text == _G.ITEM_SPELL_KNOWN or strmatch(text, S_PET_KNOWN) then
-			if db.debug and not knownTable[itemLink] then Print("%d - Tip %d/%d: %s (%s / %s)", itemId, i, lines, tostring(text), text == _G.ITEM_SPELL_KNOWN and "true" or "false", strmatch(text, S_PET_KNOWN) and "true" or "false") end
-			--knownTable[itemLink] = true -- Mark as known for later use
-			--return true -- Item is known and collected
-			if isClassic or isBCClassic or isWrathClassic then -- Fix for (BC)Classic, hope this covers all the cases.
-				knownTable[itemLink] = true -- Mark as known for later use
-				return true -- Item is known and collected
-			elseif lines - i <= 3 then -- Mounts have Riding skill and Reputation requirements under Already Known -line
-				knownTable[itemLink] = true -- Mark as known for later use
-				return true -- Item is known and collected
-			end
-		elseif strmatch(text, S_ITEM_MIN_LEVEL) then
-			if db.debug and not knownTable[itemLink] then Print("%d - Level %d/%d", itemId, strmatch(text, S_ITEM_MIN_LEVEL), UnitLevel("player")) end
-			-- We found "Requires Level %d" item-line
-			local minLevel = tonumber(strmatch(text, S_ITEM_MIN_LEVEL))
-				
-			if minLevel > 0 and minLevel <= UnitLevel("player") then -- Check if we have at least the required minimum level to use the item and allowed class
-				--knownTable[itemLink] = minLevel
-				--return true
-				comboLevelClass = comboLevelClass + 1
-				comboLevelTemp = minLevel
-			end
-		elseif strmatch(text, S_ITEM_CLASSES_ALLOWED) then
-			if db.debug and not knownTable[itemLink] then Print("%d - Classes %s/%s", itemId, strmatch(text, S_ITEM_CLASSES_ALLOWED), UnitClass("player")) end
-			-- We found "Classes: %s" item-line
-			local itemClassesAllowed = {}
-			for k, v in pairs({ strsplit(",", strmatch(text, S_ITEM_CLASSES_ALLOWED)) }) do
-				if v then
-					itemClassesAllowed[strtrim(v)] = true
+		TooltipUtil.SurfaceArgs(tooltipData)
+
+		for i, line in ipairs(tooltipData.lines) do
+			TooltipUtil.SurfaceArgs(line)
+
+			if line.leftText then
+				midResult = _checkTooltipLine(line.leftText, i, tooltipData.lines, itemId, itemLink)
+				if (midResult == true) then
+					return true
 				end
 			end
+		end
 
-			if itemClassesAllowed[UnitClass("player")] then
-				comboLevelClass = comboLevelClass + 1
-			end
-		elseif text == _G.TOY and _G["AKScanningTooltipTextLeft"..i + 2] and _G["AKScanningTooltipTextLeft"..i + 2]:GetText() == _G.ITEM_SPELL_KNOWN then
-			-- Check if items is Toy already known
-			if db.debug and not knownTable[itemLink] then Print("%d - Toy %d", itemId, i) end
-			knownTable[itemLink] = true
-			return true -- Item is known and collected
-		elseif text == _G.ITEM_COSMETIC then
-			-- Check if Cosmetic item has already known look (not all of them apparently get the "Already Known"-text added to the tooltip)
-			-- 1 function calls way, don't know if this is the right way, but seems to work according to my limited testing
-			local knownTransmog = C_TransmogCollection.PlayerHasTransmogByItemInfo(itemLink)
-			--[[
-			-- 2 function calls way, should work 100% of the time
-			local appearanceId, sourceId = C_TransmogCollection.GetItemInfo(itemLink)
-			local knownTransmog = C_TransmogCollection.GetSourceInfo(sourceId)
-			]]
-			if knownTransmog then
-				if db.debug and not knownTable[itemLink] then Print("%d - Cosmetic %d", itemId, i) end
-				knownTable[itemLink] = true
-				return true -- Item is known and collected
+	else
+		scantip:ClearLines()
+		scantip:SetHyperlink(itemLink)
+
+		--for i = 2, scantip:NumLines() do -- Line 1 is always the name so you can skip it.
+		local lines = scantip:NumLines()
+		for i = 2, lines do -- Line 1 is always the name so you can skip it.
+			local text = _G["AKScanningTooltipTextLeft"..i]:GetText()
+
+			midResult = _checkTooltipLine(text, i, lines, itemId, itemLink)
+			if (midResult == true) then
+				return true
 			end
 		end
-	end
 
-	if comboLevelClass > 1 then
-		if db.debug and not knownTable[itemLink] then Print("comboLevelClass %d for %d.", comboLevelClass, itemId) end
-		-- We matched level requirements and allowed classes
-
-		--knownTable[itemLink] = comboLevelTemp
 	end
 
 	--return false -- Item is not known, uncollected... or something went wrong
@@ -349,8 +363,13 @@ local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankU
 		--if texture and texture == 132599 then -- Inv_box_petcarrier_01 (BattlePet, itemId 82800)
 		if itemLink and itemLink:match("item:82800") then -- Check if item is Caged Battlepet (dummy item 82800)
 			-- Combining the Hook New AH -way and suggestion made by Dairyman @ Github to improve the detection of caged battlepets in GBank
-			scantip:ClearLines()
-			local speciesId = scantip:SetGuildBankItem(tab, i)
+			local speciesId
+			if C_TooltipInfo then
+				speciesId = C_TooltipInfo.GetGuildBankItem(tab, i)
+			else
+				scantip:ClearLines()
+				speciesId = scantip:SetGuildBankItem(tab, i)
+			end
 
 			if speciesId and speciesId > 0 then
 				itemLink = format("|Hbattlepet:%d::::::|h[Dummy]|h", speciesId)
@@ -420,7 +439,7 @@ f:SetScript("OnEvent", function(self, event, ...)
 
 			if isClassic or isBCClassic or isWrathClassic then -- These weren't/aren't in the Classic
 				alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = nil
-				if not isBCClassic then -- GuildBank should be in BCClassic (at least in the end of TBC it was)
+				if isClassic then -- GuildBank should be in BCClassic (at least in the end of TBC it was)
 					alreadyHookedAddOns["Blizzard_GuildBankUI"] = nil
 				end
 			else -- These aren't in the Retail anymore
@@ -429,7 +448,6 @@ f:SetScript("OnEvent", function(self, event, ...)
 
 			hooksecurefunc("MerchantFrame_UpdateMerchantInfo", _hookMerchant)
 
-			self:RegisterEvent("PLAYER_LEVEL_UP")
 		end
 		alreadyHookedAddOns[addOnName] = true -- Mark addOnName as hooked
 
@@ -446,14 +464,6 @@ f:SetScript("OnEvent", function(self, event, ...)
 		end
 		if db.debug then Print("ADDON_LOADED:", alreadyHookedAddOns[ADDON_NAME], alreadyHookedAddOns["Blizzard_AuctionHouseUI"], alreadyHookedAddOns["Blizzard_AuctionUI"], alreadyHookedAddOns["Blizzard_GuildBankUI"]) end
 
-	elseif event == "PLAYER_LEVEL_UP" then -- Player leveled up
-		local newLevel = ...
-
-		for itemLink, minLevel in pairs(knownTable) do -- Check the saved itemLinks for items we can use now
-			if type(minLevel) == "number" and minLevel <= newLevel then -- We can use this item now, so we take it out of the list
-				knownTable[itemLink] = nil
-			end
-		end
 	end
 end)
 
@@ -555,7 +565,7 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		end
 
 		if #regionTable > 0 then -- We have (some) data!
-			local line = format("ItemTest: %s - Regions: %d/%d - Known: %s\nItemLink: %s", tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
+			local line = format("ItemTest: %s %s / %s\nItem: %s - Regions: %d/%d - Known: %s\nItemLink: %s", ADDON_NAME, GetAddOnMetadata(ADDON_NAME, "Version"), (GetBuildInfo()), tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
 			for j = 1, #regionTable do
 				line = line .. "\n" .. regionTable[j]
 			end
