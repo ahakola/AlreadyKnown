@@ -141,6 +141,10 @@ local function _checkTooltipLine(text, i, tooltipTable, itemId, itemLink)
 	elseif strmatch(text, "Priest") then -- Retail PTR
 		knownTable[itemLink] = true
 		return true
+	elseif strmatch(text, "Requires Level 22") then -- Wratch Classic PTR
+		Print(">>")
+		knownTable[itemLink] = true
+		return true
 	end
 	]]
 
@@ -289,6 +293,7 @@ local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/
 				itemLink = GetAuctionItemLink('list', offset + i)
 			end
 
+			--Print(">", itemLink, _G["BrowseButton"..i.."Name"]:GetText())
 			if itemLink and _checkIfKnown(itemLink) then
 				if _G["BrowseButton"..i].id then
 					_G["BrowseButton"..i].Icon:SetVertexColor(db.r, db.g, db.b)
