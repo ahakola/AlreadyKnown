@@ -197,7 +197,6 @@ local function _checkIfKnown(itemLink)
 	end
 
 	if C_PetJournal and itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
-		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
 		local _, battlepetId = strsplit(":", itemLink)
 		if C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
 			if db.debug then Print("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId)) end
