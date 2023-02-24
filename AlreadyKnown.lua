@@ -6,41 +6,41 @@ local knownTable = {
 local db
 local questItems = { -- Quest items and matching quests
 	-- WoD
-	-- Equipment Blueprint: Tuskarr Fishing Net
-	[128491] = 39359, -- Alliance
-	[128251] = 39359, -- Horde
-	-- Equipment Blueprint: Unsinkable
-	[128250] = 39358, -- Alliance
-	[128489] = 39358, -- Horde
+		-- Equipment Blueprint: Tuskarr Fishing Net
+			[128491] = 39359, -- Alliance
+			[128251] = 39359, -- Horde
+		-- Equipment Blueprint: Unsinkable
+			[128250] = 39358, -- Alliance
+			[128489] = 39358, -- Horde
 	-- Shadowlands
-	-- Soulshapes (Data by Dairyman @ Github)
-	[181313] = 62420, -- Snapper Soul
-	[181314] = 62421, -- Gulper Soul
-	[182165] = 62422, -- Ardenmoth Soul
-	[182166] = 62423, -- Ursine soul
-	-- [182167] = 0, -- Cobra Sape
-	[182168] = 62424, -- Crane Soul
-	[182169] = 62425, -- Veilwing Soul
-	[182170] = 62426, -- Gryphon Soul
-	[182171] = 62427, -- Hippogryph Soul
-	[182172] = 62428, -- Equine Soul
-	-- [182173] = 0, -- Hyena Sape
-	[182174] = 62429, -- Leonine Soul
-	[182175] = 62430, -- Moose Soul
-	[182176] = 62431, -- Shadowstalker Soul
-	[182177] = 62432, -- Owlcat Soul
-	[182178] = 62433, -- Raptor Soul
-	[182179] = 62434, -- Runestag Soul
-	[182180] = 62435, -- Stag Soul
-	[182181] = 62437, -- Tiger soul
-	[182182] = 62438, -- Lupine Soul
-	[182183] = 62439, -- Wolfhawk Soul
-	[182184] = 62440, -- Wyvern Soul
-	[182185] = 62436, -- Shrieker Soul
+		-- Soulshapes (Data by Dairyman @ Github)
+			[181313] = 62420, -- Snapper Soul
+			[181314] = 62421, -- Gulper Soul
+			[182165] = 62422, -- Ardenmoth Soul
+			[182166] = 62423, -- Ursine soul
+			-- [182167] = 0, -- Cobra Sape
+			[182168] = 62424, -- Crane Soul
+			[182169] = 62425, -- Veilwing Soul
+			[182170] = 62426, -- Gryphon Soul
+			[182171] = 62427, -- Hippogryph Soul
+			[182172] = 62428, -- Equine Soul
+			-- [182173] = 0, -- Hyena Sape
+			[182174] = 62429, -- Leonine Soul
+			[182175] = 62430, -- Moose Soul
+			[182176] = 62431, -- Shadowstalker Soul
+			[182177] = 62432, -- Owlcat Soul
+			[182178] = 62433, -- Raptor Soul
+			[182179] = 62434, -- Runestag Soul
+			[182180] = 62435, -- Stag Soul
+			[182181] = 62437, -- Tiger soul
+			[182182] = 62438, -- Lupine Soul
+			[182183] = 62439, -- Wolfhawk Soul
+			[182184] = 62440, -- Wyvern Soul
+			[182185] = 62436, -- Shrieker Soul
 }
 local specialItems = { -- Items needing special treatment
 	-- Krokul Flute -> Flight Master's Whistle
-	[152964] = { 141605, 11, 269 } -- 269 for Flute applied Whistle, 257 (or anything else than 269) for pre-apply Whistle
+		[152964] = { 141605, 11, 269 } -- 269 for Flute applied Whistle, 257 (or anything else than 269) for pre-apply Whistle
 }
 local containerItems = { -- These items are containers containing items we might know already, but don't get any marking about us knowing the contents already
 	[21740] = { -- Small Rocket Recipes
@@ -141,8 +141,8 @@ local function _checkTooltipLine(text, i, tooltipTable, itemId, itemLink)
 	elseif strmatch(text, "Priest") then -- Retail PTR
 		knownTable[itemLink] = true
 		return true
-	elseif strmatch(text, "Requires Level 22") then -- Wratch Classic PTR
-		Print(">>")
+	elseif strmatch(text, "alcoholic beverage") then -- Wratch Classic PTR
+		Print("PTR Debug match:", text)
 		knownTable[itemLink] = true
 		return true
 	]]
@@ -160,55 +160,57 @@ local function _checkIfKnown(itemLink)
 	--if itemId == 82800 then Print("itemLink:", gsub(itemLink, "\124", "\124\124")) end
 	-- How to handle Pet Cages inside GBanks? They look like this and don't have any information about the pet inside:
 	-- |cff0070dd|Hitem:82800::::::::120:269::::::|h[Pet Cage]|h|r
-	if itemId and questItems[itemId] then -- Check if item is a quest item.
-		if (isClassic and IsQuestFlaggedCompleted(questItems[itemId])) or ((not isClassic) and C_QuestLog.IsQuestFlaggedCompleted(questItems[itemId])) then -- Check if the quest for item is already done.
-			if db.debug and not knownTable[itemLink] then Print("%d - QuestItem", itemId) end
-			knownTable[itemLink] = true -- Mark as known for later use
-			return true -- This quest item is already known
-		end
-		return false -- Quest item is uncollected... or something went wrong
-	elseif itemId and specialItems[itemId] then -- Check if we need special handling, this is most likely going to break with then next item we add to this
-		local specialData = specialItems[itemId]
-		local _, specialLink = GetItemInfo(specialData[1])
-		if specialLink then
-			local specialTbl = { strsplit(":", specialLink) }
-			local specialInfo = tonumber(specialTbl[specialData[2]])
-			if specialInfo == specialData[3] then
-				if db.debug and not knownTable[itemLink] then Print("%d, %d - SpecialItem", itemId, specialInfo) end
+	if itemId then
+		if questItems[itemId] then -- Check if item is a quest item.
+			if C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted(questItems[itemId]) then -- Check if the quest for item is already done.
+				if db.debug then Print("%d - QuestItem", itemId) end
 				knownTable[itemLink] = true -- Mark as known for later use
-				return true -- This specialItem is already known
+				return true -- This quest item is already known
 			end
-		end
-		return false -- Item is specialItem, but data isn't special
-	elseif itemId and containerItems[itemId] then -- Check the known contents of the item
-		local knownCount, totalCount = 0, 0
-		for ci = 1, #containerItems[itemId] do
-			totalCount = totalCount + 1
-			local thisItem = _checkIfKnown(format("item:%d", containerItems[itemId][ci])) -- Checkception
-			if thisItem then
-				knownCount = knownCount + 1
+			return false -- Quest item is uncollected... or something went wrong
+		elseif specialItems[itemId] then -- Check if we need special handling, this is most likely going to break with then next item we add to this
+			local specialData = specialItems[itemId]
+			local _, specialLink = GetItemInfo(specialData[1])
+			if specialLink then
+				local specialTbl = { strsplit(":", specialLink) }
+				local specialInfo = tonumber(specialTbl[specialData[2]])
+				if specialInfo == specialData[3] then
+					if db.debug then Print("%d, %d - SpecialItem", itemId, specialInfo) end
+					knownTable[itemLink] = true -- Mark as known for later use
+					return true -- This specialItem is already known
+				end
 			end
+			return false -- Item is specialItem, but data isn't special
+		elseif containerItems[itemId] then -- Check the known contents of the item
+			local knownCount, totalCount = 0, 0
+			for cI = 1, #containerItems[itemId] do
+				totalCount = totalCount + 1
+				local thisItem = _checkIfKnown(format("item:%d", containerItems[itemId][cI])) -- Checkception
+				if thisItem then
+					knownCount = knownCount + 1
+				end
+			end
+			if db.debug then Print("%d (%d/%d) - ContainerItem", itemId, knownCount, totalCount) end
+			return (knownCount == totalCount)
 		end
-		if db.debug and not knownTable[itemLink] then Print("%d (%d/%d) - ContainerItem", itemId, knownCount, totalCount) end
-		return (knownCount == totalCount)
 	end
 
-	if not (isClassic or isBCClassic or isWrathClassic) then -- No Pet Journal in (BC)Classic
+	if C_PetJournal and itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
 		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
-			local _, battlepetId = strsplit(":", itemLink)
-			if C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
-				if db.debug and not knownTable[itemLink] then Print("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId)) end
-				knownTable[itemLink] = true -- Mark as known for later use
-				return true -- Battlepet is collected
-			end
-			return false -- Battlepet is uncollected... or something went wrong
+		local _, battlepetId = strsplit(":", itemLink)
+		if C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
+			if db.debug then Print("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId)) end
+			knownTable[itemLink] = true -- Mark as known for later use
+			return true -- Battlepet is collected
+		end
+		return false -- Battlepet is uncollected... or something went wrong
+	end
 		end
 	end
 
 	local midResult = false
 	if C_TooltipInfo then -- Retail in 10.0.2->, maybe comes to Wrath Classic later?
 		local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
-
 		TooltipUtil.SurfaceArgs(tooltipData)
 
 		for i, line in ipairs(tooltipData.lines) do
@@ -265,7 +267,7 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 				-- Icon
 				button.cells[2].Icon:SetVertexColor(db.r, db.g, db.b)
 				button.cells[2].IconBorder:SetVertexColor(db.r, db.g, db.b)
-				button.cells[2].Icon:SetDesaturated(db.monochrome)
+				button.cells[2].Icon:SetDesaturated((db.monochrome))
 			else
 				-- Highlight
 				button.SelectedHighlight:SetVertexColor(1, 1, 1)
@@ -285,37 +287,26 @@ local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/
 	local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
 
 	for i=1, _G.NUM_BROWSE_TO_DISPLAY do
-		if (_G["BrowseButton"..i.."Item"] and _G["BrowseButton"..i.."ItemIconTexture"]) or _G["BrowseButton"..i].id then -- Something to do with ARL?
-			local itemLink
-			if _G["BrowseButton"..i].id then
-				itemLink = GetAuctionItemLink('list', _G["BrowseButton"..i].id)
+		if _G["BrowseButton"..i].id then -- Something to do with ARL?
+			local itemLink = GetAuctionItemLink('list', _G["BrowseButton"..i].id)
+
+			if itemLink and _checkIfKnown(itemLink) then
+				_G["BrowseButton"..i].Icon:SetVertexColor(db.r, db.g, db.b)
+				_G["BrowseButton"..i].Icon:SetDesaturated((db.monochrome))
 			else
-				itemLink = GetAuctionItemLink('list', offset + i)
+				_G["BrowseButton"..i].Icon:SetVertexColor(1, 1, 1)
+				_G["BrowseButton"..i].Icon:SetDesaturated(false)
 			end
+		elseif _G["BrowseButton"..i.."Item"] and _G["BrowseButton"..i.."ItemIconTexture"] then
+			local itemLink = GetAuctionItemLink('list', offset + i)
 
 			--Print(">", itemLink, _G["BrowseButton"..i.."Name"]:GetText())
 			if itemLink and _checkIfKnown(itemLink) then
-				if _G["BrowseButton"..i].id then
-					_G["BrowseButton"..i].Icon:SetVertexColor(db.r, db.g, db.b)
-				else
-					_G["BrowseButton"..i.."ItemIconTexture"]:SetVertexColor(db.r, db.g, db.b)
-				end
-
-				if db.monochrome then
-					if _G["BrowseButton"..i].id then
-						_G["BrowseButton"..i].Icon:SetDesaturated(true)
-					else
-						_G["BrowseButton"..i.."ItemIconTexture"]:SetDesaturated(true)
-					end
-				end
+				_G["BrowseButton"..i.."ItemIconTexture"]:SetVertexColor(db.r, db.g, db.b)
+				_G["BrowseButton"..i.."ItemIconTexture"]:SetDesaturated((db.monochrome))
 			else
-				if _G["BrowseButton"..i].id then
-					_G["BrowseButton"..i].Icon:SetVertexColor(1, 1, 1)
-					_G["BrowseButton"..i].Icon:SetDesaturated(false)
-				else
-					_G["BrowseButton"..i.."ItemIconTexture"]:SetVertexColor(1, 1, 1)
-					_G["BrowseButton"..i.."ItemIconTexture"]:SetDesaturated(false)
-				end
+				_G["BrowseButton"..i.."ItemIconTexture"]:SetVertexColor(1, 1, 1)
+				_G["BrowseButton"..i.."ItemIconTexture"]:SetDesaturated(false)
 			end
 		end
 	end
@@ -335,9 +326,7 @@ local function _hookMerchant() -- Most of this found from FrameXML/MerchantFrame
 			SetItemButtonTextureVertexColor(itemButton, 0.9*db.r, 0.9*db.g, 0.9*db.b)
 			SetItemButtonNormalTextureVertexColor(itemButton, 0.9*db.r, 0.9*db.g, 0.9*db.b)
 
-			if db.monochrome then
-				_G["MerchantItem"..i.."ItemButtonIconTexture"]:SetDesaturated(true)
-			end
+			_G["MerchantItem"..i.."ItemButtonIconTexture"]:SetDesaturated((db.monochrome))
 		else
 			_G["MerchantItem"..i.."ItemButtonIconTexture"]:SetDesaturated(false)
 		end
