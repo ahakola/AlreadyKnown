@@ -156,7 +156,8 @@ local function _checkIfKnown(itemLink)
 		return true
 	end
 
-	local itemId = tonumber(itemLink:match("item:(%d+)"))
+	local itemId, _, _, _, itemIcon, classId, subclassId = GetItemInfoInstant(itemLink)
+	itemId = itemId or tonumber(itemLink:match("item:(%d+)"))
 	--if itemId == 82800 then Print("itemLink:", gsub(itemLink, "\124", "\124\124")) end
 	-- How to handle Pet Cages inside GBanks? They look like this and don't have any information about the pet inside:
 	-- |cff0070dd|Hitem:82800::::::::120:269::::::|h[Pet Cage]|h|r
@@ -205,6 +206,26 @@ local function _checkIfKnown(itemLink)
 		end
 		return false -- Battlepet is uncollected... or something went wrong
 	end
+	if isWrathClassic then -- Wrath Classic doesn't show "Already Known" text for Companion Pets in Vendors etc.
+		if classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+			local numCompanions = GetNumCompanions("CRITTER")
+			for i = 1, numCompanions do
+				local creatureId, creatureName, creatureSpellId, icon, issummoned, mountType = GetCompanionInfo("CRITTER", i)
+				if db.debug then Print("C: (%d/%d) Id: %d -> %s - CId: %d (%s), SId: %d (%s), TId: %d (%s)", i, numCompanions, itemId, creatureName, creatureId, tostring(itemId == creatureId), creatureSpellId, tostring(itemId == creatureSpellId), icon, tostring(itemIcon == icon)) end
+				--[[
+					Pet's name and the item's name might not match
+						[Yellow Moth Egg] vs [Yellow Moth]
+					Same icon can be used for multiple different pets and items
+						[Blue Moth Egg], [White Moth Egg], [Yellow Moth Egg] and [Yellow Moth] all use textureId 236193
+					Pet's creatureId doesn't have link to itemId or itemLink
+						[Yellow Moth Egg] itemId 29903 vs [Yellow Moth] creatureId 21008
+					Pet's creatureSpellId doesn't have anything useful from GetSpellInfo
+						[Yellow Moth] creatureSpellId 35910
+				]]--
+				--Bandaid solution that is less than ideal:
+				--DevTools_Dump({ strmatch((GetItemInfo(itemId)), creatureName) })
+				return (itemIcon == icon and strmatch((GetItemInfo(itemId)), creatureName))
+			end
 		end
 	end
 
