@@ -379,7 +379,28 @@ local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankU
 			-- Combining the Hook New AH -way and suggestion made by Dairyman @ Github to improve the detection of caged battlepets in GBank
 			local speciesId
 			if C_TooltipInfo then
-				speciesId = C_TooltipInfo.GetGuildBankItem(tab, i)
+				--speciesId = C_TooltipInfo.GetGuildBankItem(tab, i)
+
+				-- Try to debug CurseForge issue #17, need outside help with this
+				local tooltipData = C_TooltipInfo.GetGuildBankItem(tab, i)
+				TooltipUtil.SurfaceArgs(tooltipData)
+
+				local output = "Please report this to CurseForge issue #17:\nhttps://www.curseforge.com/wow/addons/alreadyknown/issues/17\n-----\n"
+				for k, v in pairs(tooltipData) do
+					output = output .. " - " .. tostring(k) .. ": " .. tostring(v) .. " (" .. type(v) .. ")\n"
+				end
+				output = output .. "-----\n"
+
+				for i, line in ipairs(tooltipData.lines) do
+					TooltipUtil.SurfaceArgs(line)
+					for k, v in pairs(line) do
+						output = output .. i .. " - " .. tostring(k) .. ": " .. tostring(v) .. " (" .. type(v) .. ")\n"
+					end
+				end
+				output = output .. "-----"
+
+				if db.debug then error(output) end
+
 			else
 				scantip:ClearLines()
 				speciesId = scantip:SetGuildBankItem(tab, i)
