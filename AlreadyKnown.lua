@@ -83,6 +83,41 @@ local function Print(text, ...)
 	end
 end
 
+local function _debugTooltipData(tooltipData, header) -- Debug C_TooltipInfo stuff
+	local function _tooltipTableDebugIterator(debugTable, depth)
+		local orderTable, iterationString = {}, ""
+		depth = depth or 1
+
+		TooltipUtil.SurfaceArgs(debugTable)
+		for k, v in pairs(debugTable) do
+			orderTable[#orderTable + 1] = k
+		end
+		table.sort(orderTable)
+
+		for i = 1, #orderTable do
+			local k, v = orderTable[i], debugTable[orderTable[i]]
+			if type(v) == "table" then
+				local tableName = type(k) == "string" and k or "[" .. k .. "]"
+				iterationString = iterationString .. string.rep(" ", 4 * depth) .. tableName .. " = {\n" .. _tooltipTableDebugIterator(v, depth + 1) .. string.rep(" ", 4 * depth) .. "},\n"
+			else
+				iterationString = iterationString .. string.rep(" ", 4 * depth) .. k .. " = " .. tostring(v) .. ",\n"
+			end
+		end
+
+		return iterationString
+	end
+
+	local debugOutput = "-----\n"
+	if header and header ~= "" then
+		debugOutput = debugOutput .. header .. "\n-----\n"
+	end
+
+	debugOutput = debugOutput .. "tooltipData = {\n" .. _tooltipTableDebugIterator(tooltipData) .. "}\n"
+	debugOutput = debugOutput .. "-----\n"
+
+	return debugOutput
+end
+
 -- Tooltip and scanning by Phanx @ http://www.wowinterface.com/forums/showthread.php?p=271406
 -- Search string by Phanx @ https://github.com/Phanx/BetterBattlePetTooltip/blob/master/Addon.lua
 local S_PET_KNOWN = strmatch(_G.ITEM_PET_KNOWN, "[^%(]+")
@@ -587,6 +622,10 @@ SlashCmdList.ALREADYKNOWN = function(...)
 			local line = format("ItemTest: %s %s / %s\nItem: %s - Regions: %d/%d - Known: %s\nItemLink: %s", ADDON_NAME, GetAddOnMetadata(ADDON_NAME, "Version"), (GetBuildInfo()), tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
 			for j = 1, #regionTable do
 				line = line .. "\n" .. regionTable[j]
+			end
+			if db.debug then
+				local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
+				line = line .. "\n" .. _debugTooltipData(tooltipData)
 			end
 			--Print(line)
 			local dialog = StaticPopup_Show("ALREADYKNOWN_DEBUG", tostring(itemLink)) -- Send to dialog for easy copy&paste for end user
