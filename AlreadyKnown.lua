@@ -98,8 +98,10 @@ local function _debugTooltipData(tooltipData, header) -- Debug C_TooltipInfo stu
 			local k, v = orderTable[i], debugTable[orderTable[i]]
 			if type(v) == "table" then
 				local tableName = type(k) == "string" and k or "[" .. k .. "]"
-				iterationString = iterationString .. string.rep(" ", 4 * depth) .. tableName .. " = {\n" .. _tooltipTableDebugIterator(v, depth + 1) .. string.rep(" ", 4 * depth) .. "},\n"
-			else
+				if tableName ~= "args" and ((not db.exclude) or (db.exclude and tableName ~= "lines")) then
+					iterationString = iterationString .. string.rep(" ", 4 * depth) .. tableName .. " = {\n" .. _tooltipTableDebugIterator(v, depth + 1) .. string.rep(" ", 4 * depth) .. "},\n"
+				end
+			elseif type(v) ~= "function" then
 				iterationString = iterationString .. string.rep(" ", 4 * depth) .. k .. " = " .. tostring(v) .. ",\n"
 			end
 		end
@@ -113,7 +115,7 @@ local function _debugTooltipData(tooltipData, header) -- Debug C_TooltipInfo stu
 	end
 
 	debugOutput = debugOutput .. "tooltipData = {\n" .. _tooltipTableDebugIterator(tooltipData) .. "}\n"
-	debugOutput = debugOutput .. "-----\n"
+	debugOutput = debugOutput .. "-----"
 
 	return debugOutput
 end
@@ -592,6 +594,9 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		db.debug = not db.debug
 		if db.debug then wipe(knownTable) end
 		Print("Debug: %s", (db.debug and "|cff00ff00true|r" or "|cffff0000false|r"))
+	elseif (...) == "exclude" then
+		db.exclude = not db.exclude
+		Print("Exclude: %s", (db.exclude and "|cff00ff00true|r" or "|cffff0000false|r"))
 	elseif (...) == "itemtest" then -- For getting debug data from people in the future
 		local _, itemLink = _G.GameTooltip:GetItem()
 		local regionTable = {}
@@ -639,9 +644,9 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		Print("/alreadyknown ( green | blue | yellow | cyan | purple | gray | custom | monochrome )")
 	end
 
-	if (...) ~= "" and (...) ~= "custom" and (...) ~= "monochrome" and (...) ~= "debug" and (...) ~= "itemtest" then
+	if (...) ~= "" and (...) ~= "custom" and (...) ~= "monochrome" and (...) ~= "debug" and (...) ~= "itemtest" and (...) ~= "exclude" then
 		Print("|cff%s%s|r, Monochrome: %s", _RGBToHex(db.r*255, db.g*255, db.b*255), (...), (db.monochrome and "|cff00ff00true|r" or "|cffff0000false|r"))
-		if db.debug then Print("Debug: |cff00ff00true|r") end
+		if db.debug then Print("Debug: |cff00ff00true|r, Exclude: |cff00ff00%s|r", (db.exclude and "|cff00ff00true|r" or "|cffff0000false|r")) end
 	end
 
 	if ColorPickerFrame:IsShown() and (...) ~= "custom" then
