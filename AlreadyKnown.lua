@@ -88,7 +88,6 @@ local function _debugTooltipData(tooltipData, header) -- Debug C_TooltipInfo stu
 		local orderTable, iterationString = {}, ""
 		depth = depth or 1
 
-		TooltipUtil.SurfaceArgs(debugTable)
 		for k, v in pairs(debugTable) do
 			orderTable[#orderTable + 1] = k
 		end
@@ -268,11 +267,8 @@ local function _checkIfKnown(itemLink)
 	local midResult = false
 	if C_TooltipInfo then -- Retail in 10.0.2->, maybe comes to Wrath Classic later?
 		local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
-		TooltipUtil.SurfaceArgs(tooltipData)
 
 		for i, line in ipairs(tooltipData.lines) do
-			TooltipUtil.SurfaceArgs(line)
-
 			if line.leftText then
 				midResult = _checkTooltipLine(line.leftText, i, tooltipData.lines, itemId, itemLink)
 				if (midResult == true) then
@@ -417,7 +413,6 @@ local function _hookGBank() -- FrameXML/Blizzard_GuildBankUI/Blizzard_GuildBankU
 			local speciesId
 			if C_TooltipInfo then
 				local tooltipData = C_TooltipInfo.GetGuildBankItem(tab, i)
-				TooltipUtil.SurfaceArgs(tooltipData)
 
 				if tooltipData and tooltipData.battlePetSpeciesID then
 					speciesId = tooltipData.battlePetSpeciesID
