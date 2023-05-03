@@ -619,7 +619,7 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		end
 
 		if #regionTable > 0 then -- We have (some) data!
-			local line = format("ItemTest: %s %s / %s\nItem: %s - Regions: %d/%d - Known: %s\nItemLink: %s", ADDON_NAME, GetAddOnMetadata(ADDON_NAME, "Version"), (GetBuildInfo()), tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
+			local line = format("ItemTest: %s %s / %s\nItem: %s - Regions: %d/%d - Known: %s\nItemLink: %s", ADDON_NAME, C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"), (GetBuildInfo()), tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
 			for j = 1, #regionTable do
 				line = line .. "\n" .. regionTable[j]
 			end
