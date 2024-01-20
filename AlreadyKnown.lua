@@ -440,7 +440,8 @@ f:SetScript("OnEvent", function(self, event, ...)
 		local addOnName = ...
 		if addOnName == "Blizzard_AuctionHouseUI" then -- New AH
 			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "RefreshScrollFrame", _hookNewAH)
-			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "OnScrollBoxRangeChanged", _hookNewAH) -- "RefreshScrollFrame" didn't update when scrolling AH up and down, adding this fixes that
+			-- "OnScrollBoxRangeChanged" was changed to "OnScrollBoxScroll" in 10.2.5?
+			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "OnScrollBoxScroll", _hookNewAH) -- "RefreshScrollFrame" didn't update when scrolling AH up and down, adding this fixes that
 			--hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "UpdateRefreshFrame", function(...) DevTools_Dump({ ... }) end)
 			alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = true
 
