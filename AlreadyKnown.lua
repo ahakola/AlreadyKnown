@@ -280,7 +280,10 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 	if isClassic or isBCClassic or isWrathClassic then return end -- Only for Retail 8.3 and newer
 
 	-- Derived from https://www.townlong-yak.com/framexml/10.0.0/Blizzard_AuctionHouseUI/Blizzard_AuctionHouseItemList.lua#322
-	self.ScrollBox:ForEachFrame(function(button)
+	--self.ScrollBox:ForEachFrame(function(button)
+	local children = { self.ScrollTarget:GetChildren() }
+	for i = 1, #children do
+		local button = children[i]
 		--Print(">", button.rowData.itemKey.itemID, button.cells[2].Text:GetText())
 		if button.rowData.itemKey.itemID then
 			local itemLink
@@ -308,7 +311,8 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 				button.cells[2].Icon:SetDesaturated(false)
 			end
 		end
-	end)
+	--end)
+	end
 end
 
 local function _hookAH() -- Most of this found from FrameXML/Blizzard_AuctionUI/Blizzard_AuctionUI.lua
@@ -439,9 +443,8 @@ f:SetScript("OnEvent", function(self, event, ...)
 	if event == "ADDON_LOADED" and alreadyHookedAddOns[(...)] == false then
 		local addOnName = ...
 		if addOnName == "Blizzard_AuctionHouseUI" then -- New AH
-			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "RefreshScrollFrame", _hookNewAH)
-			-- "OnScrollBoxRangeChanged" was changed to "OnScrollBoxScroll" in 10.2.5?
-			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "OnScrollBoxScroll", _hookNewAH) -- "RefreshScrollFrame" didn't update when scrolling AH up and down, adding this fixes that
+			--hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList.ScrollBox, "OnViewDataChanged", function(...) Print(">OnViewDataChanged") end)
+			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList.ScrollBox, "Update", _hookNewAH)
 			--hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList, "UpdateRefreshFrame", function(...) DevTools_Dump({ ... }) end)
 			alreadyHookedAddOns["Blizzard_AuctionHouseUI"] = true
 
