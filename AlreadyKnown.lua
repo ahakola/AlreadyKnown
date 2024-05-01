@@ -285,7 +285,7 @@ local function _hookNewAH(self) -- Most of this found from FrameXML/Blizzard_Auc
 	for i = 1, #children do
 		local button = children[i]
 		--Print(">", button.rowData.itemKey.itemID, button.cells[2].Text:GetText())
-		if button.rowData.itemKey.itemID then
+		if button and button.rowData and button.rowData.itemKey.itemID then
 			local itemLink
 			if button.rowData.itemKey.itemID == 82800 then -- BattlePet
 				itemLink = format("|Hbattlepet:%d::::::|h[Dummy]|h", button.rowData.itemKey.battlePetSpeciesID)
