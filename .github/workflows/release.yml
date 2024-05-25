@@ -38,3 +38,8 @@ jobs:
         uses: BigWigsMods/packager@v2
         with:
           args: -g wrath -p 88589
+
+      - name: Create CataClassic Package
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -g cata -p 88589
