@@ -67,6 +67,95 @@ local containerItems = { -- These items are containers containing items we might
 		128318 -- Touch of the Void
 	}
 }
+local spellbookItems = { -- Pair [ItemId] to matching [spellId]
+
+	-- Warlock
+		-- Imp
+			-- Firebolt 1-7
+				-- nil = 3110,
+				[16302] = 7799,
+				[16316] = 7800,
+				[16317] = 7801,
+				[16318] = 7802,
+				[16319] = 11762,
+				[16320] = 1176,
+			-- Blood Pact 1-5
+				[16321] = 6307,
+				[16322] = 7804,
+				[16323] = 7805,
+				[16324] = 11766,
+				[16325] = 1176,
+			-- Fire Shield 1-5
+				[16326] = 2947,
+				[16327] = 8316,
+				[16328] = 8317,
+				[16329] = 11700,
+				[16330] = 11701,
+			-- Phase Shift
+				[16331] = 4511,
+		-- Voidwalker
+			-- Torment 1-6
+				--nil = 3716,
+				[16346] = 7809,
+				[16347] = 7810,
+				[16348] = 7811,
+				[16349] = 11774,
+				[16350] = 11775,
+			-- Sacrifice 1-6
+				[16351] = 7812,
+				[16352] = 19438,
+				[16353] = 19440,
+				[16354] = 19441,
+				[16355] = 19442,
+				[16356] = 1944,
+			-- Consume Shadows 1-6
+				[16357] = 17767,
+				[16358] = 17850,
+				[16359] = 17851,
+				[16360] = 17852,
+				[16361] = 17853,
+				[16362] = 17854,
+			-- Suffering 1-4
+				[16363] = 17735,
+				[16364] = 17750,
+				[16365] = 17751,
+				[16366] = 17752,
+		-- Succubus
+			-- Lash of Pain 1-6
+				--nil = 7814,
+				[16368] = 7815,
+				[16371] = 7816,
+				[16372] = 11778,
+				[16373] = 11779,
+				[16374] = 11780,
+			-- Soothing Kiss 1-4
+				[16375] = 6360,
+				[16376] = 7813,
+				[16377] = 11784,
+				[16378] = 11785,
+			-- Seduction
+				[16379] = 6358,
+			-- Lesser Invisibility
+				[16380] = 7870,
+		-- Felhunter
+			-- Devour Magic 1-4
+				--nil = 19505,
+				[16381] = 19731,
+				[16382] = 19734,
+				[16383] = 19736,
+			-- Tainted Blood 1-4
+				[16384] = 19478,
+				[16385] = 19655,
+				[16386] = 19656,
+				[16387] = 19660,
+			-- Spell Lock 1-2
+				[16388] = 19244,
+				[16389] = 19647,
+			-- Paranoia
+				[16390] = 19480
+
+}
+
 
 local isRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
 local isClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
@@ -231,6 +320,19 @@ local function _checkIfKnown(itemLink)
 			end
 			if db.debug then Print("%d (%d/%d) - ContainerItem", itemId, knownCount, totalCount) end
 			return (knownCount == totalCount)
+		elseif isAnyClassic and spellbookItems[itemId] then -- Check Warlock Grimoires
+			local numSpells, petToken = HasPetSpells()
+			if numSpells and petToken == "DEMON" then
+				for i = 1, numSpells do
+					local spellName, spellSubName, spellId = GetSpellBookItemName(i, BOOKTYPE_PET)
+					if spellbookItems[itemId] == spellId then
+						if db.debug then Print("%d (%s/%s/%d) - SpellBookItem", itemId, spellName, spellSubName, spellId) end
+						knownTable[itemLink] = true -- Mark as known for later use
+						return true -- This spellbookItem item is already known
+					end
+				end
+			end
+
 		end
 	end
 
