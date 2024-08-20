@@ -19,27 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Retail Package
+      - name: Create Package
         uses: BigWigsMods/packager@v2
         with:
           args: -p 88589
-
-      - name: Create Classic Package
-        uses: BigWigsMods/packager@v2
-        with:
-          args: -g classic -p 88589
-
-      - name: Create BCClassic Package
-        uses: BigWigsMods/packager@v2
-        with:
-          args: -g bcc -p 88589
-
-      - name: Create WrathClassic Package
-        uses: BigWigsMods/packager@v2
-        with:
-          args: -g wrath -p 88589
-
-      - name: Create CataClassic Package
-        uses: BigWigsMods/packager@v2
-        with:
-          args: -g cata -p 88589
