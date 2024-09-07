@@ -706,6 +706,24 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		local regionTable = {}
 		local regions = { _G.GameTooltip:GetRegions() }
 
+		-- https://warcraft.wiki.gg/wiki/ItemType
+		local _, _, _, _, _, _, _, _, _, _, _, classId, subclassId = C_Item.GetItemInfo(itemLink)
+		local itemClass, itemSubclass
+		for k, v in pairs(Enum.ItemClass) do
+			if v == classId then
+				itemClass = k
+				break
+			end
+		end
+		if itemClass and Enum["Item" .. itemClass .. "Subclass"] then
+			for k, v in pairs(Enum["Item" .. itemClass .. "Subclass"]) do
+				if v == subclassId then
+					itemSubclass = k
+					break
+				end
+			end
+		end
+
 		for i = 1, #regions do
 			local region = regions[i]
 			if region then
@@ -728,7 +746,12 @@ SlashCmdList.ALREADYKNOWN = function(...)
 		end
 
 		if #regionTable > 0 then -- We have (some) data!
-			local line = format("ItemTest: %s %s / %s\nItem: %s - Regions: %d/%d - Known: %s\nItemLink: %s", ADDON_NAME, C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"), (GetBuildInfo()), tostring(itemLink), #regionTable, #regions, tostring(_checkIfKnown(itemLink)), tostring(itemLink):gsub("|", "||"))
+			local line = format(
+				"ItemTest: %s %s / %s\nItem: %s (%d %s/%d %s) - Regions: %d/%d - Known: %s\nItemLink: %s",
+				ADDON_NAME, C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"), (GetBuildInfo()),
+				tostring(itemLink), classId, tostring(itemClass), subclassId, tostring(itemSubclass), #regionTable, #regions, tostring(_checkIfKnown(itemLink)),
+				tostring(itemLink):gsub("|", "||")
+			)
 			for j = 1, #regionTable do
 				line = line .. "\n" .. regionTable[j]
 			end
