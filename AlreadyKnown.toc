@@ -1,4 +1,4 @@
-## Interface: 11507, 20504, 30403, 40402, 110105
+## Interface: 11507, 20504, 30403, 40402, 50500, 110107
 ## Author: Sanex (Arathor EU)
 ## Title: Already Known?
 ## Version: @project-version@
