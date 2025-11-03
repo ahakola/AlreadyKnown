@@ -4,6 +4,7 @@
 ## Version: @project-version@
 ## Notes: Puts green/blue/yellow/cyan/purple tint on already known scrolls/pets/other learnable items on vendors
 ## SavedVariables: AlreadyKnownSettings
+## LoadSavedVariablesFirst: 1
 
-AlreadyKnown.lua
-
+AlreadyKnown.lua [AllowLoadGameType mainline]
+AlreadyKnownClassic.lua [AllowLoadGameType classic]
