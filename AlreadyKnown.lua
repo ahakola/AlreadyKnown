@@ -244,7 +244,8 @@ local _G = _G
 
 		if C_PetJournal and itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
 			local _, battlepetId = strsplit(":", itemLink)
-			if C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
+			battlepetId = tonumber(battlepetId)
+			if battlepetId and C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
 				Debug("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
 				knownTable[itemLink] = true -- Mark as known for later use
 				return true -- Battlepet is collected
