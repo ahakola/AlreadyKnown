@@ -321,7 +321,8 @@ local _G = _G
 			return false -- Battlepet is uncollected... or something went wrong
 		end
 
-		if classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+		if (not isBCClassic) and classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+			-- CurseForge issues #23 & #24 reported by gogo1951, this doesn't work in the TBC Classic Anniversary
 			local numCompanions = GetNumCompanions("CRITTER")
 			for i = 1, numCompanions do
 				local creatureId, creatureName, creatureSpellId, icon, issummoned, mountType = GetCompanionInfo("CRITTER", i)
