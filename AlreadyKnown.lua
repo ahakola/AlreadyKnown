@@ -158,6 +158,10 @@ local _G = _G
 	local S_ITEM_MIN_LEVEL = "^" .. gsub(ITEM_MIN_LEVEL, "%%d", "(%%d+)")
 	local S_ITEM_CLASSES_ALLOWED = "^" .. gsub(ITEM_CLASSES_ALLOWED, "%%s", "(%%a+)")
 
+	local S_HOUSING_DECOR_OWNED_COUNT_FORMAT = "^" .. gsub(HOUSING_DECOR_OWNED_COUNT_FORMAT, "(|cn[A-Z_]+:)|(|r)", "") -- Line has color coding in it
+	S_HOUSING_DECOR_OWNED_COUNT_FORMAT = S_HOUSING_DECOR_OWNED_COUNT_FORMAT:gsub("%((.+)%)", "%%(%1%%)") -- Escape parentheses
+	S_HOUSING_DECOR_OWNED_COUNT_FORMAT = S_HOUSING_DECOR_OWNED_COUNT_FORMAT:gsub("%%d", "(%%d+)") -- Get them digits
+
 	local function _checkTooltipLine(text, i, tooltipTable, itemId, itemLink)
 		local lines = #tooltipTable
 		local toyLine = tooltipTable[i + 2] and tooltipTable[i + 2].leftText
@@ -179,6 +183,14 @@ local _G = _G
 				Debug("%d - Cosmetic %d", itemId, i)
 				return true -- Item is known and collected
 			end
+		elseif strmatch(text, S_HOUSING_DECOR_OWNED_COUNT_FORMAT) then -- Check if item is Decor already known
+			-- This should never get hit, but leaving it as an fallback option if the primary detection breaks at some point
+			local owned, _, placed, storage = strmatch(text, S_HOUSING_DECOR_OWNED_COUNT_FORMAT)
+			owned = tonumber(owned) or 0
+			if owned > 0 then
+				Debug("%d - Decor %d (%d / %d / %d)", itemId, i, owned, placed, storage)
+				return true -- Item is known and collected
+			end
 
 		-- Debug
 		elseif isPTR then
@@ -187,6 +199,9 @@ local _G = _G
 				return true
 			elseif strmatch(text, "alcoholic beverage") then
 				Debug("PTR Debug match:", text)
+				return true
+			elseif strmatch(text, "Owned: ") then
+				Debug("PTR Debug match:", text, "->", strmatch(text, S_HOUSING_DECOR_OWNED_COUNT_FORMAT))
 				return true
 			end
 		end
