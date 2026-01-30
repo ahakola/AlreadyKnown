@@ -279,6 +279,37 @@ local _G = _G
 				return false -- Mount is uncollected... or something went wrong
 			end
 
+		elseif classId == Enum.ItemClass.Housing and subclassId == Enum.ItemHousingSubclass.Decor then -- Decor
+			-- Reading the Tooltip for HOUSING_DECOR_OWNED_COUNT_FORMAT -line is an option if this fails!
+			local info = C_HousingCatalog.GetCatalogEntryInfoByItem(itemLink, true) -- itemInfo, tryGetOwnedInfo
+			if info and info.entryID then
+				local entrySubtype = info.entryID.entrySubtype
+				if entrySubtype == Enum.HousingCatalogEntrySubtype.OwnedUnmodifiedStack or entrySubtype == Enum.HousingCatalogEntrySubtype.OwnedModifiedStack then -- 3 or 2
+					Debug("%d - Housing/Decor: %d (%d)", itemId, entrySubtype, info.entryID.recordID)
+					knownTable[itemLink] = true -- Mark as known for later use
+					return true
+				end
+			end
+			return false -- Decor is uncollected... or something went wrong
+
+			--[[
+			UPDATE 20260130
+			CF user Daeveren had posted comment with this as a suggestion:
+
+			if C_HousingCatalog and C_HousingCatalog.GetCatalogEntryInfoByItem then
+				local decorInfo = C_HousingCatalog.GetCatalogEntryInfoByItem(itemLink, true)
+				if decorInfo then
+					-- firstAcquisitionBonus == 0 means the XP bonus was claimed (item was collected at least once)
+					if decorInfo.firstAcquisitionBonus == 0 then
+						Debug("%d - HousingDecor: Collected (bonus claimed)", itemId)
+						knownTable[itemLink] = true
+						return true
+					end
+					knownTable[itemLink] = false
+					return false
+				end
+			end
+			]]--
 		end
 
 		local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
