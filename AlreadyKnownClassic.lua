@@ -358,6 +358,19 @@ local _G = _G
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true -- CompanionPet is collected
 				end
+			end
+		end
+
+		if C_MountJournal and classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.Mount then -- Mount
+			local numMounts = C_MountJournal.GetNumMounts()
+			for i = 1, numMounts do
+				local name, _, icon, _, _, _, _, _, _, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(i)
+				if isCollected and (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), name)) then
+					Debug("%d Mount: (%d/%d) %s - MId: %d TId: %d", itemId, i, numMounts, name, mountID, icon)
+					knownTable[itemLink] = true -- Mark as known for later use
+					return true -- Mount is collected
+				end
+			end
 		end
 
 		scantip:ClearLines()
