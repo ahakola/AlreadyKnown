@@ -310,18 +310,32 @@ local _G = _G
 			end
 		end
 
-		if C_PetJournal and itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
-			local _, battlepetId = strsplit(":", itemLink)
-			battlepetId = tonumber(battlepetId)
-			if battlepetId and C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
-				Debug("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
-				knownTable[itemLink] = true -- Mark as known for later use
-				return true -- Battlepet is collected
-			end
-			return false -- Battlepet is uncollected... or something went wrong
-		end
+		if C_PetJournal then
+			if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
+				local _, battlepetId = strsplit(":", itemLink)
+				battlepetId = tonumber(battlepetId)
+				if battlepetId and C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
+					Debug("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
+					knownTable[itemLink] = true -- Mark as known for later use
+					return true -- Battlepet is collected
+				end
+				return false -- Battlepet is uncollected... or something went wrong
 
-		if (not isBCClassic) and classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+			elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
+				-- Hoping this works in the TBC Classic Anniversary and fixes the CF issues #23 and #24
+				local _, numOwned = C_PetJournal.GetNumPets()
+				for i = 1, numOwned do
+					local _, _, owned, _, _, _, _, speciesName, icon, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
+					if owned and (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), speciesName)) then
+						Debug("%d - CompanionPet: (%d/%d) %s - CId: %d TId: %d", itemId, i, numOwned, speciesName, companionID, icon)
+						knownTable[itemLink] = true -- Mark as known for later use
+						return true -- CompanionPet is collected
+					end
+				end
+				return false -- CompanionPet is uncollected... or something went wrong
+			end
+
+		elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
 			-- CurseForge issues #23 & #24 reported by gogo1951, this doesn't work in the TBC Classic Anniversary
 			local numCompanions = GetNumCompanions("CRITTER")
 			for i = 1, numCompanions do
