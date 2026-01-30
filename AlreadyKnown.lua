@@ -253,6 +253,34 @@ local _G = _G
 			return false -- Battlepet is uncollected... or something went wrong
 		end
 
+		if classId == Enum.ItemClass.Miscellaneous then
+			if subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
+				local _, numOwned = C_PetJournal.GetNumPets()
+				for i = 1, numOwned do
+					local _, _, owned, _, _, _, _, speciesName, icon, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
+					if owned and (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), speciesName)) then
+						Debug("%d - CompanionPet: (%d/%d) %s - CId: %d TId: %d", itemId, i, numOwned, speciesName, companionID, icon)
+						knownTable[itemLink] = true -- Mark as known for later use
+						return true -- CompanionPet is collected
+					end
+				end
+				return false -- CompanionPet is uncollected... or something went wrong
+
+			elseif subclassId == Enum.ItemMiscellaneousSubclass.Mount then -- Mount
+				local numMounts = C_MountJournal.GetNumMounts()
+				for i = 1, numMounts do
+					local name, _, icon, _, _, _, _, _, _, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(i)
+					if isCollected and (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), name)) then
+						Debug("%d Mount: (%d/%d) %s - MId: %d TId: %d", itemId, i, numMounts, name, mountID, icon)
+						knownTable[itemLink] = true -- Mark as known for later use
+						return true -- Mount is collected
+					end
+				end
+				return false -- Mount is uncollected... or something went wrong
+			end
+
+		end
+
 		local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
 
 		for i, line in ipairs(tooltipData.lines) do
@@ -484,7 +512,7 @@ local _G = _G
 			local regions = { GameTooltip:GetRegions() }
 
 			-- https://warcraft.wiki.gg/wiki/ItemType
-			local _, _, _, _, _, _, _, _, _, _, _, classId, subclassId = C_Item.GetItemInfo(itemLink)
+			local _, _, _, _, _, _, _, _, _, itemTexture, _, classId, subclassId = C_Item.GetItemInfo(itemLink)
 			local itemClass, itemSubclass
 			for k, v in pairs(Enum.ItemClass) do
 				if v == classId then
@@ -532,6 +560,32 @@ local _G = _G
 				for j = 1, #regionTable do
 					line = line .. "\n" .. regionTable[j]
 				end
+
+				-- Check these item types for additional info
+				if classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+					line = line .. "\n-----\nCompanionPet:"
+					local numPets, numOwned = C_PetJournal.GetNumPets()
+					for index = 1, numOwned do
+						local petID, speciesID, owned, customName, level, favorite, isRevoked, speciesName, icon, petType, companionID, tooltip, description, isWild, canBattle, isTradeable, isUnique, obtainable = C_PetJournal.GetPetInfoByIndex(index)
+						if owned and (itemTexture == icon and strmatch((C_Item.GetItemInfo(itemLink)), speciesName)) then
+							line = line .. "\n- Index: " .. index .. " / " .. numOwned .. "\n- Name: " .. speciesName .. "\n- companionID: " .. companionID .. "\n- Icon: " .. icon
+							break
+						end
+					end
+
+				elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.Mount then
+					line = line .. "\n-----\nMount:"
+					local numMounts = C_MountJournal.GetNumMounts()
+					for index = 1, numMounts do
+						local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isSteadyFlight = C_MountJournal.GetDisplayedMountInfo(index)
+						if isCollected and (itemTexture == icon and strmatch((C_Item.GetItemInfo(itemLink)), name)) then
+							line = line .. "\n- Index: " .. index .. " / " .. numMounts .. "\n- Name: " .. name .. "\n- mountID: " .. mountID .. "\n- Icon: " .. icon
+							break
+						end
+					end
+
+				end
+
 				if db.debug then
 					local tooltipData = C_TooltipInfo.GetHyperlink(itemLink)
 					line = line .. "\n" .. _debugTooltipData(tooltipData)
