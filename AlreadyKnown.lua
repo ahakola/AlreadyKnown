@@ -242,7 +242,7 @@ local _G = _G
 			end
 		end
 
-		if C_PetJournal and itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
+		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
 			local _, battlepetId = strsplit(":", itemLink)
 			battlepetId = tonumber(battlepetId)
 			if battlepetId and C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
