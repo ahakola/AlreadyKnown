@@ -630,6 +630,21 @@ local _G = _G
 						end
 					end
 
+				elseif classId == Enum.ItemClass.Housing and subclassId == Enum.ItemHousingSubclass.Decor then
+					line = line .. "\n-----\nDecor entryID:"
+					local info = C_HousingCatalog.GetCatalogEntryInfoByItem(itemLink, true) -- itemInfo, tryGetOwnedInfo
+					for entryKey, entryValue in pairs(info.entryID) do
+						if entryKey == "entrySubtype" then
+							for subType, numValue in pairs(Enum.HousingCatalogEntrySubtype) do
+								if entryValue == numValue then
+									line = line .. "\n- " .. entryKey .. ": " .. entryValue .. " (" .. subType .. ")"
+									break
+								end
+							end
+						else
+							line = line .. "\n- " .. entryKey .. ": " .. entryValue
+						end
+					end
 				end
 
 				if db.debug then
