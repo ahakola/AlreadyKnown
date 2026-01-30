@@ -615,7 +615,7 @@ local _G = _G
 			local regions = { GameTooltip:GetRegions() }
 
 			-- https://warcraft.wiki.gg/wiki/ItemType
-			local _, _, _, _, _, _, _, _, _, _, _, classId, subclassId = C_Item.GetItemInfo(itemLink)
+			local _, _, _, _, _, _, _, _, _, itemTexture, _, classId, subclassId = C_Item.GetItemInfo(itemLink)
 			local itemClass, itemSubclass
 			for k, v in pairs(Enum.ItemClass) do
 				if v == classId then
