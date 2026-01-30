@@ -353,8 +353,11 @@ local _G = _G
 				]]--
 				--Bandaid solution that is less than ideal:
 				--DevTools_Dump({ strmatch((GetItemInfo(itemId)), creatureName) })
-				return (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), creatureName))
-			end
+				--return (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), creatureName))
+				if (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), creatureName)) then
+					knownTable[itemLink] = true -- Mark as known for later use
+					return true -- CompanionPet is collected
+				end
 		end
 
 		scantip:ClearLines()
