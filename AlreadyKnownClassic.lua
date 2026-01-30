@@ -663,6 +663,31 @@ local _G = _G
 				for j = 1, #regionTable do
 					line = line .. "\n" .. regionTable[j]
 				end
+
+				-- Check these item types for additional info
+				if C_PetJournal and classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+					line = line .. "\n-----\nCompanionPet:"
+					local numPets, numOwned = C_PetJournal.GetNumPets()
+					for index = 1, numOwned do
+						local petID, speciesID, owned, customName, level, favorite, isRevoked, speciesName, icon, petType, companionID, tooltip, description, isWild, canBattle, isTradeable, isUnique, obtainable = C_PetJournal.GetPetInfoByIndex(index)
+						if owned and (itemTexture == icon and strmatch((C_Item.GetItemInfo(itemLink)), speciesName)) then
+							line = line .. "\n- Index: " .. index .. " / " .. numOwned .. "\n- Name: " .. speciesName .. "\n- companionID: " .. companionID .. "\n- Icon: " .. icon
+							break
+						end
+					end
+
+				elseif C_MountJournal and classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.Mount then
+					line = line .. "\n-----\nMount:"
+					local numMounts = C_MountJournal.GetNumMounts()
+					for index = 1, numMounts do
+						local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isSteadyFlight = C_MountJournal.GetDisplayedMountInfo(index)
+						if isCollected and (itemTexture == icon and strmatch((C_Item.GetItemInfo(itemLink)), name)) then
+							line = line .. "\n- Index: " .. index .. " / " .. numMounts .. "\n- Name: " .. name .. "\n- mountID: " .. mountID .. "\n- Icon: " .. icon
+							break
+						end
+					end
+				end
+
 				--Print(line)
 				local dialog = StaticPopup_Show("ALREADYKNOWN_DEBUG", tostring(itemLink)) -- Send to dialog for easy copy&paste for end user
 					if dialog then
