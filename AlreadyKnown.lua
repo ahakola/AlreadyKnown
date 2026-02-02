@@ -494,8 +494,8 @@ local _G = _G
 	end
 
 	function f:PLAYER_ENTERING_WORLD(event, isInitialLogin, isReloadingUi)
-		Debug("===", event, isInitialLogin, isReloadingUi)
 		if isInitialLogin or isReloadingUi then
+			Debug("===", event, isInitialLogin, isReloadingUi)
 			-- The collection status of Decor items is not immidiately available through the API. We have to either change the vendor page or try to pre-cache things.
 			-- This should cache Decor stuff, or at least HOUSING_STORAGE_UPDATED event is fired:
 			local searcher = C_HousingCatalog.CreateCatalogSearcher()
