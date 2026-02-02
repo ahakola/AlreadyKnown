@@ -268,7 +268,7 @@ local _G = _G
 			return false -- Battlepet is uncollected... or something went wrong
 		end
 
-		if classId == Enum.ItemClass.Miscellaneous then
+		if itemId and classId == Enum.ItemClass.Miscellaneous then
 			if subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
 				local _, numOwned = C_PetJournal.GetNumPets()
 				for i = 1, numOwned do
