@@ -270,15 +270,28 @@ local _G = _G
 
 		if classId == Enum.ItemClass.Miscellaneous then
 			local itemName = C_Item.GetItemInfo(itemId)
+			local itemNameBrackets
+			if itemName:match("%((%a+)%)") then
+				local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
+				basicName = strtrim(basicName)
+				itemNameBrackets = bracketInformation .. " " .. basicName
+				--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
+			end
 			if itemName then
 				if subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
 					local _, numOwned = C_PetJournal.GetNumPets()
 					for i = 1, numOwned do
 						local _, _, owned, _, _, _, _, speciesName, icon, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
-							if owned and (itemIcon == icon and strmatch(itemName, speciesName)) then
-								Debug("%d - CompanionPet: (%d/%d) %s - CId: %d TId: %d", itemId, i, numOwned, speciesName, companionID, icon)
-								knownTable[itemLink] = true -- Mark as known for later use
-								return true -- CompanionPet is collected
+							if owned then
+								if itemIcon == icon and strmatch(itemName, speciesName) then
+									Debug("%d - CompanionPet: (%d/%d) %s - CId: %d TId: %d", itemId, i, numOwned, speciesName, companionID, icon)
+									knownTable[itemLink] = true -- Mark as known for later use
+									return true -- CompanionPet is collected
+								elseif itemNameBrackets and strmatch(itemNameBrackets, speciesName) then -- Close enough match
+									Debug("%d - CompanionPet (Brackets): (%d/%d) %s (%s) - CId: %d TId: %d", itemId, i, numOwned, speciesName, itemNameBrackets, companionID, icon)
+									knownTable[itemLink] = true -- Mark as known for later use
+									return true -- CompanionPet is collected
+								end
 							end
 					end
 					return false -- CompanionPet is uncollected... or something went wrong
