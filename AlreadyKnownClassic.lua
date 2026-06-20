@@ -324,7 +324,7 @@ local _G = _G
 			elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
 				local itemName = C_Item.GetItemInfo(itemId)
 				local itemNameBrackets
-				if itemName:match("%((%a+)%)") then
+				if itemName and itemName:match("%((%a+)%)") then
 					local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
 					basicName = strtrim(basicName)
 					itemNameBrackets = bracketInformation .. " " .. basicName
@@ -356,7 +356,7 @@ local _G = _G
 			local numCompanions = GetNumCompanions("CRITTER")
 			local itemName = C_Item.GetItemInfo(itemId)
 			local itemNameBrackets
-			if itemName:match("%((%a+)%)") then
+			if itemName and itemName:match("%((%a+)%)") then
 				local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
 				basicName = strtrim(basicName)
 				itemNameBrackets = bracketInformation .. " " .. basicName

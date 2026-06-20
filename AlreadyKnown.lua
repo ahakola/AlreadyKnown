@@ -271,7 +271,7 @@ local _G = _G
 		if classId == Enum.ItemClass.Miscellaneous then
 			local itemName = C_Item.GetItemInfo(itemId)
 			local itemNameBrackets
-			if itemName:match("%((%a+)%)") then
+			if itemName and itemName:match("%((%a+)%)") then
 				local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
 				basicName = strtrim(basicName)
 				itemNameBrackets = bracketInformation .. " " .. basicName
