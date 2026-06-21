@@ -323,14 +323,15 @@ local _G = _G
 
 			elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
 				local itemName = C_Item.GetItemInfo(itemId)
-				local itemNameBrackets
-				if itemName:match("%((%a+)%)") then
-					local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
-					basicName = strtrim(basicName)
-					itemNameBrackets = bracketInformation .. " " .. basicName
-					--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
-				end
 				if itemName then
+					local itemNameBrackets
+					if itemName:match("%((%a+)%)") then
+						local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
+						basicName = strtrim(basicName)
+						itemNameBrackets = bracketInformation .. " " .. basicName
+						--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
+					end
+
 					-- Hoping this works in the TBC Classic Anniversary and fixes the CF issues #23 and #24
 					local _, numOwned = C_PetJournal.GetNumPets()
 					for i = 1, numOwned do
@@ -355,14 +356,15 @@ local _G = _G
 			-- CurseForge issues #23 & #24 reported by gogo1951, this doesn't work in the TBC Classic Anniversary
 			local numCompanions = GetNumCompanions("CRITTER")
 			local itemName = C_Item.GetItemInfo(itemId)
-			local itemNameBrackets
-			if itemName:match("%((%a+)%)") then
-				local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
-				basicName = strtrim(basicName)
-				itemNameBrackets = bracketInformation .. " " .. basicName
-				--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
-			end
 			if itemName then
+				local itemNameBrackets
+				if itemName:match("%((%a+)%)") then
+					local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
+					basicName = strtrim(basicName)
+					itemNameBrackets = bracketInformation .. " " .. basicName
+					--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
+				end
+
 				for i = 1, numCompanions do
 					local creatureId, creatureName, creatureSpellId, icon, issummoned, mountType = GetCompanionInfo("CRITTER", i)
 					Debug("C: (%d/%d) Id: %d -> %s - CId: %d (%s), SId: %d (%s), TId: %d (%s)", i, numCompanions, itemId, creatureName, creatureId, tostring(itemId == creatureId), creatureSpellId, tostring(itemId == creatureSpellId), icon, tostring(itemIcon == icon))

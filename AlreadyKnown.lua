@@ -270,15 +270,16 @@ local _G = _G
 
 		if classId == Enum.ItemClass.Miscellaneous then
 			local itemName = C_Item.GetItemInfo(itemId)
-			local itemNameBrackets
-			if itemName:match("%((%a+)%)") then
-				local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
-				basicName = strtrim(basicName)
-				itemNameBrackets = bracketInformation .. " " .. basicName
-				--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
-			end
 			if itemName then
 				if subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
+					local itemNameBrackets
+					if itemName:match("%((%a+)%)") then
+						local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
+						basicName = strtrim(basicName)
+						itemNameBrackets = bracketInformation .. " " .. basicName
+						--Debug("itemNameBrackets:", itemName, "->", bracketInformation, "+", basicName, "->", itemNameBrackets)
+					end
+
 					local _, numOwned = C_PetJournal.GetNumPets()
 					for i = 1, numOwned do
 						local _, _, owned, _, _, _, _, speciesName, icon, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
