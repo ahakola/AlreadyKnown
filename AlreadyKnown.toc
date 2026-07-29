@@ -1,10 +1,11 @@
-## Interface: 11508, 20506, 30405, 40402, 50504, 120007
+## Interface: 11509, 20506, 30405, 40402, 50504, 120007
 ## Author: Sanex (Arathor EU)
 ## Title: Already Known?
 ## Version: @project-version@
 ## Notes: Puts green/blue/yellow/cyan/purple tint on already known scrolls/pets/other learnable items on vendors
 ## SavedVariables: AlreadyKnownSettings
 ## LoadSavedVariablesFirst: 1
+## X-Curse-Project-ID: 88589
 
 AlreadyKnown.lua [AllowLoadGameType mainline]
 AlreadyKnownClassic.lua [AllowLoadGameType classic]
