@@ -24,6 +24,6 @@ jobs:
           body: "Automated yearly update of the copyright year in license files.
 
           No manual review of logic is required, only verification that everything remains intact."
-          commit-message: "Update license to current year"
+          commit-message: Update license to current year
           branch: update-license
           delete-branch: true
