@@ -485,14 +485,14 @@ local _G = _G
 	f:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 	local needHooking = {
-		Blizzard_AuctionHouseUI = true, -- 8.3 =>
+		Blizzard_AuctionHouseUI = true, -- 8.3 => / 1.60.1 =>
 		Blizzard_GuildBankUI = true -- 2.3 =>
 	}
 	function f:ADDON_LOADED(event, addOnName, containsBindings)
 		if not needHooking[addOnName] then return end
 		Debug("===", event, addOnName)
 
-		if addOnName == "Blizzard_AuctionHouseUI" then -- AH - Classic/Retail
+		if addOnName == "Blizzard_AuctionHouseUI" then -- AH - Classic/Retail/Forever
 			hooksecurefunc(AuctionHouseFrame.BrowseResultsFrame.ItemList.ScrollBox, "Update", _hookAH)
 			needHooking["Blizzard_AuctionHouseUI"] = false
 

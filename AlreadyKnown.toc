@@ -6,5 +6,5 @@
 ## SavedVariables: AlreadyKnownSettings
 ## LoadSavedVariablesFirst: 1
 
-AlreadyKnown.lua [AllowLoadGameType mainline]
-AlreadyKnownClassic.lua [AllowLoadGameType classic]
+AlreadyKnown.lua [AllowLoadGameType standard]
+AlreadyKnownClassic.lua [AllowLoadGameType classic, camelot]
