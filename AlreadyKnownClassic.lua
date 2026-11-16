@@ -63,6 +63,7 @@ local _G = _G
 	]]
 	local isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 	local isBCClassic = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+	local isForever = WOW_PROJECT_ID == WOW_PROJECT_CAMELOT
 	local isPTR = IsPublicTestClient and IsPublicTestClient() or false
 
 
@@ -294,7 +295,7 @@ local _G = _G
 					return true -- This container item is already known
 				end
 
-			elseif (isClassic or isBCClassic) and spellbookItems[itemId] then -- Check Warlock Grimoires
+			elseif (isClassic or isBCClassic or isForever) and spellbookItems[itemId] then -- Check Warlock Grimoires
 				local numSpells, petToken = HasPetSpells()
 				if numSpells and petToken == "DEMON" then
 					for i = 1, numSpells do
