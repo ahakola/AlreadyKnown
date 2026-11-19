@@ -296,7 +296,7 @@ local _G = _G
 				end
 
 			elseif (isClassic or isBCClassic or isForever) and spellbookItems[itemId] then -- Check Warlock Grimoires
-				local numSpells, petToken = HasPetSpells()
+				local numSpells, petToken = C_SpellBook and C_SpellBook.HasPetSpells() or HasPetSpells() -- Forever doesn't have HasPetSpells()
 				if numSpells and petToken == "DEMON" then
 					for i = 1, numSpells do
 						local spellName, spellSubName, spellId = GetSpellBookItemName(i, BOOKTYPE_PET)
