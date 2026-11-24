@@ -259,21 +259,23 @@ local _G = _G
 
 		if itemId then
 			if questItems[itemId] then -- Check if item is a quest item.
+				Debug("%d - QuestItem", itemId)
 				if C_QuestLog.IsQuestFlaggedCompleted(questItems[itemId]) then -- Check if the quest for item is already done.
-					Debug("%d - QuestItem", itemId)
+					Debug("\t--Hit!")
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true -- This quest item is already known
 				end
 				return false -- Quest item is uncollected... or something went wrong
 
 			elseif specialItems[itemId] then -- Check if we need special handling, this is most likely going to break with then next item we add to this
+				Debug("%d, - SpecialItem", itemId)
 				local specialData = specialItems[itemId]
 				local _, specialLink = C_Item.GetItemInfo(specialData[1])
 				if specialLink then
 					local specialTbl = { strsplit(":", specialLink) }
 					local specialInfo = tonumber(specialTbl[specialData[2]])
 					if specialInfo == specialData[3] then
-						Debug("%d, %d - SpecialItem", itemId, specialInfo)
+						Debug("\t--Hit! %d", specialInfo)
 						knownTable[itemLink] = true -- Mark as known for later use
 						return true -- This specialItem is already known
 					end
@@ -291,17 +293,19 @@ local _G = _G
 				end
 				Debug("%d (%d/%d) - ContainerItem", itemId, knownItemCount, totalItemCount)
 				if knownItemCount == totalItemCount then
+					Debug("\t--Hit!")
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true -- This container item is already known
 				end
 
 			elseif (isClassic or isBCClassic or isForever) and spellbookItems[itemId] then -- Check Warlock Grimoires
 				local numSpells, petToken = C_SpellBook and C_SpellBook.HasPetSpells() or HasPetSpells() -- Forever doesn't have HasPetSpells()
+				Debug("%d (%d/%s) - SpellBookItem", itemId, numSpells, tostring(petToken))
 				if numSpells and petToken == "DEMON" then
 					for i = 1, numSpells do
 						local spellName, spellSubName, spellId = GetSpellBookItemName(i, BOOKTYPE_PET)
 						if spellbookItems[itemId] == spellId then
-							Debug("%d (%s/%s/%d) - SpellBookItem", itemId, spellName, spellSubName, spellId)
+							Debug("\t--Hit! %s/%s/%d", spellName, spellSubName, spellId)
 							knownTable[itemLink] = true -- Mark as known for later use
 							return true -- This spellbookItem item is already known
 						end
@@ -313,16 +317,18 @@ local _G = _G
 
 		if C_PetJournal then
 			if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
+				Debug("%d - BattlePet", itemId)
 				local _, battlepetId = strsplit(":", itemLink)
 				battlepetId = tonumber(battlepetId)
 				if battlepetId and C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
-					Debug("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
+					Debug("\t--Hit! %s %d", battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true -- Battlepet is collected
 				end
 				return false -- Battlepet is uncollected... or something went wrong
 
 			elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
+				Debug("%d - CompanionPet", itemId)
 				local itemName = C_Item.GetItemInfo(itemId)
 				if itemName then
 					local itemNameBrackets
@@ -339,11 +345,11 @@ local _G = _G
 						local _, _, owned, _, _, _, _, speciesName, icon, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
 						if owned then
 							if itemIcon == icon and strmatch(itemName, speciesName) then
-								Debug("%d - CompanionPet: (%d/%d) %s - CId: %d TId: %d", itemId, i, numOwned, speciesName, companionID, icon)
+								Debug("\t--Hit! (%d/%d) %s - CId: %d TId: %d", i, numOwned, speciesName, companionID, icon)
 								knownTable[itemLink] = true -- Mark as known for later use
 								return true -- CompanionPet is collected
 							elseif itemNameBrackets and strmatch(itemNameBrackets, speciesName) then -- Close enough match
-								Debug("%d - CompanionPet (Brackets): (%d/%d) %s (%s) - CId: %d TId: %d", itemId, i, numOwned, speciesName, itemNameBrackets, companionID, icon)
+								Debug("\t--Hit (Brackets)! (%d/%d) %s (%s) - CId: %d TId: %d", i, numOwned, speciesName, itemNameBrackets, companionID, icon)
 								knownTable[itemLink] = true -- Mark as known for later use
 								return true -- CompanionPet is collected
 							end
@@ -354,6 +360,7 @@ local _G = _G
 			end
 
 		elseif classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then
+			Debug("%d - CompanionPet", itemId)
 			-- CurseForge issues #23 & #24 reported by gogo1951, this doesn't work in the TBC Classic Anniversary
 			local numCompanions = GetNumCompanions("CRITTER")
 			local itemName = C_Item.GetItemInfo(itemId)
@@ -368,7 +375,7 @@ local _G = _G
 
 				for i = 1, numCompanions do
 					local creatureId, creatureName, creatureSpellId, icon, issummoned, mountType = GetCompanionInfo("CRITTER", i)
-					Debug("C: (%d/%d) Id: %d -> %s - CId: %d (%s), SId: %d (%s), TId: %d (%s)", i, numCompanions, itemId, creatureName, creatureId, tostring(itemId == creatureId), creatureSpellId, tostring(itemId == creatureSpellId), icon, tostring(itemIcon == icon))
+					--Debug("C: (%d/%d) Id: %d -> %s - CId: %d (%s), SId: %d (%s), TId: %d (%s)", i, numCompanions, itemId, creatureName, creatureId, tostring(itemId == creatureId), creatureSpellId, tostring(itemId == creatureSpellId), icon, tostring(itemIcon == icon))
 					--[[
 						Pet's name and the item's name might not match
 							[Yellow Moth Egg] vs [Yellow Moth]
@@ -383,9 +390,11 @@ local _G = _G
 					--DevTools_Dump({ strmatch((GetItemInfo(itemId)), creatureName) })
 					--return (itemIcon == icon and strmatch((C_Item.GetItemInfo(itemId)), creatureName))
 					if (itemIcon == icon and strmatch(itemName, creatureName)) then
+						Debug("\t--Hit! (%d/%d) Id: %d -> %s - CId: %d (%s), SId: %d (%s), TId: %d (%s)", i, numCompanions, itemId, creatureName, creatureId, tostring(itemId == creatureId), creatureSpellId, tostring(itemId == creatureSpellId), icon, tostring(itemIcon == icon))
 						knownTable[itemLink] = true -- Mark as known for later use
 						return true -- CompanionPet is collected
 					elseif (itemNameBrackets and strmatch(itemNameBrackets, speciesName)) then -- Close enough match
+						Debug("\t--Hit (Brackets)! (%d/%d) Id: %d -> %s - CId: %d (%s), SId: %d (%s), TId: %d (%s)", i, numCompanions, itemId, creatureName, creatureId, tostring(itemId == creatureId), creatureSpellId, tostring(itemId == creatureSpellId), icon, tostring(itemIcon == icon))
 						knownTable[itemLink] = true -- Mark as known for later use
 						return true -- CompanionPet is collected
 					end
@@ -394,13 +403,14 @@ local _G = _G
 		end
 
 		if C_MountJournal and classId == Enum.ItemClass.Miscellaneous and subclassId == Enum.ItemMiscellaneousSubclass.Mount then -- Mount
+			Debug("%d Mount", itemId)
 			local numMounts = C_MountJournal.GetNumMounts()
 			local itemName = C_Item.GetItemInfo(itemId)
 			if itemName then
 				for i = 1, numMounts do
 					local creatureName, _, icon, _, _, _, _, _, _, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(i)
 					if isCollected and (itemIcon == icon and strmatch(itemName, creatureName)) then
-						Debug("%d Mount: (%d/%d) %s - MId: %d TId: %d", itemId, i, numMounts, creatureName, mountID, icon)
+						Debug("\t--Hit! (%d/%d) %s - MId: %d TId: %d", i, numMounts, creatureName, mountID, icon)
 						knownTable[itemLink] = true -- Mark as known for later use
 						return true -- Mount is collected
 					end

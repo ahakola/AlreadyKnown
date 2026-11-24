@@ -219,21 +219,23 @@ local _G = _G
 
 		if itemId then
 			if questItems[itemId] then -- Check if item is a quest item.
+				Debug("%d - QuestItem", itemId)
 				if C_QuestLog.IsQuestFlaggedCompleted(questItems[itemId]) then -- Check if the quest for item is already done.
-					Debug("%d - QuestItem", itemId)
+					Debug("\t--Hit!")
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true -- This quest item is already known
 				end
 				return false -- Quest item is uncollected... or something went wrong
 
 			elseif specialItems[itemId] then -- Check if we need special handling, this is most likely going to break with then next item we add to this
+				Debug("%d, - SpecialItem", itemId)
 				local specialData = specialItems[itemId]
 				local _, specialLink = C_Item.GetItemInfo(specialData[1])
 				if specialLink then
 					local specialTbl = { strsplit(":", specialLink) }
 					local specialInfo = tonumber(specialTbl[specialData[2]])
 					if specialInfo == specialData[3] then
-						Debug("%d, %d - SpecialItem", itemId, specialInfo)
+						Debug("\t--Hit! %d", specialInfo)
 						knownTable[itemLink] = true -- Mark as known for later use
 						return true -- This specialItem is already known
 					end
@@ -251,6 +253,7 @@ local _G = _G
 				end
 				Debug("%d (%d/%d) - ContainerItem", itemId, knownItemCount, totalItemCount)
 				if knownItemCount == totalItemCount then
+					Debug("\t--Hit!")
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true -- This container item is already known
 				end
@@ -258,10 +261,11 @@ local _G = _G
 		end
 
 		if itemLink:match("|H(.-):") == "battlepet" then -- Check if item is Caged Battlepet (dummy item 82800)
+			Debug("%d - BattlePet", itemId)
 			local _, battlepetId = strsplit(":", itemLink)
 			battlepetId = tonumber(battlepetId)
 			if battlepetId and C_PetJournal.GetNumCollectedInfo(battlepetId) > 0 then
-				Debug("%d - BattlePet: %s %d", itemId, battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
+				Debug("\t--Hit! %s %d", battlepetId, C_PetJournal.GetNumCollectedInfo(battlepetId))
 				knownTable[itemLink] = true -- Mark as known for later use
 				return true -- Battlepet is collected
 			end
@@ -272,6 +276,7 @@ local _G = _G
 			local itemName = C_Item.GetItemInfo(itemId)
 			if itemName then
 				if subclassId == Enum.ItemMiscellaneousSubclass.CompanionPet then -- CompanionPet
+					Debug("%d - CompanionPet", itemId)
 					local itemNameBrackets
 					if itemName:match("%((%a+)%)") then
 						local basicName, bracketInformation = itemName:match("([%a%s]+) %((%a+)%)")
@@ -285,11 +290,11 @@ local _G = _G
 						local _, _, owned, _, _, _, _, speciesName, icon, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
 							if owned then
 								if itemIcon == icon and strmatch(itemName, speciesName) then
-									Debug("%d - CompanionPet: (%d/%d) %s - CId: %d TId: %d", itemId, i, numOwned, speciesName, companionID, icon)
+									Debug("\t--Hit! (%d/%d) %s - CId: %d TId: %d", i, numOwned, speciesName, companionID, icon)
 									knownTable[itemLink] = true -- Mark as known for later use
 									return true -- CompanionPet is collected
 								elseif itemNameBrackets and strmatch(itemNameBrackets, speciesName) then -- Close enough match
-									Debug("%d - CompanionPet (Brackets): (%d/%d) %s (%s) - CId: %d TId: %d", itemId, i, numOwned, speciesName, itemNameBrackets, companionID, icon)
+									Debug("\t--Hit (Brackets)! (%d/%d) %s (%s) - CId: %d TId: %d", i, numOwned, speciesName, itemNameBrackets, companionID, icon)
 									knownTable[itemLink] = true -- Mark as known for later use
 									return true -- CompanionPet is collected
 								end
@@ -298,11 +303,12 @@ local _G = _G
 					return false -- CompanionPet is uncollected... or something went wrong
 
 				elseif subclassId == Enum.ItemMiscellaneousSubclass.Mount then -- Mount
+					Debug("%d Mount", itemId)
 					local numMounts = C_MountJournal.GetNumMounts()
 					for i = 1, numMounts do
 						local creatureName, _, icon, _, _, _, _, _, _, _, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(i)
 						if isCollected and (itemIcon == icon and strmatch(itemName, creatureName)) then
-							Debug("%d Mount: (%d/%d) %s - MId: %d TId: %d", itemId, i, numMounts, creatureName, mountID, icon)
+							Debug("\t--Hit! (%d/%d) %s - MId: %d TId: %d", i, numMounts, creatureName, mountID, icon)
 							knownTable[itemLink] = true -- Mark as known for later use
 							return true -- Mount is collected
 						end
@@ -312,12 +318,13 @@ local _G = _G
 			end
 
 		elseif classId == Enum.ItemClass.Housing and subclassId == Enum.ItemHousingSubclass.Decor then -- Decor
+			Debug("%d - Housing/Decor", itemId)
 			-- Reading the Tooltip for HOUSING_DECOR_OWNED_COUNT_FORMAT -line is an option if this fails!
 			local info = C_HousingCatalog.GetCatalogEntryInfoByItem(itemLink, true) -- itemInfo, tryGetOwnedInfo
 			if info and info.entryID then
 				local entrySubtype = info.entryID.entrySubtype
 				if entrySubtype == Enum.HousingCatalogEntrySubtype.OwnedUnmodifiedStack or entrySubtype == Enum.HousingCatalogEntrySubtype.OwnedModifiedStack then -- 3 or 2
-					Debug("%d - Housing/Decor: %d (%d)", itemId, entrySubtype, info.entryID.recordID)
+					Debug("\t--Hit! %d (%d)", entrySubtype, info.entryID.recordID)
 					knownTable[itemLink] = true -- Mark as known for later use
 					return true
 				end
