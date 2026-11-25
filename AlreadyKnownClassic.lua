@@ -299,15 +299,26 @@ local _G = _G
 				end
 
 			elseif (isClassic or isBCClassic or isForever) and spellbookItems[itemId] then -- Check Warlock Grimoires
-				local numSpells, petToken = C_SpellBook and C_SpellBook.HasPetSpells() or HasPetSpells() -- Forever doesn't have HasPetSpells()
-				Debug("%d (%d/%s) - SpellBookItem", itemId, numSpells, tostring(petToken))
-				if numSpells and petToken == "DEMON" then
-					for i = 1, numSpells do
-						local spellName, spellSubName, spellId = GetSpellBookItemName(i, BOOKTYPE_PET)
-						if spellbookItems[itemId] == spellId then
-							Debug("\t--Hit! %s/%s/%d", spellName, spellSubName, spellId)
-							knownTable[itemLink] = true -- Mark as known for later use
-							return true -- This spellbookItem item is already known
+				local numPetSpells, petToken = C_SpellBook.HasPetSpells()
+				Debug("%d (%d/%s) - SpellBookItem", itemId, numPetSpells, tostring(petToken))
+				if numPetSpells and petToken == "DEMON" then
+					if isForever then -- Forever
+						for i = 1, numPetSpells do
+							local spellBookItemInfo = C_SpellBook.GetSpellBookItemInfo(i, Enum.SpellBookSpellBank.Pet) -- Enum.SpellBookSpellBank.Pet == 1
+							if spellbookItems[itemId] == spellBookItemInfo.spellID then
+								Debug("\t--Hit! %s/%s/%d", spellBookItemInfo.name, spellBookItemInfo.subName, spellBookItemInfo.spellID)
+								knownTable[itemLink] = true -- Mark as known for later use
+								return true -- This spellbookItem item is already known								
+							end
+						end
+					else -- Classic or BCClassic
+						for i = 1, numPetSpells do
+							local spellName, spellSubName, spellId = GetSpellBookItemName(i, BOOKTYPE_PET)
+							if spellbookItems[itemId] == spellId then
+								Debug("\t--Hit! %s/%s/%d", spellName, spellSubName, spellId)
+								knownTable[itemLink] = true -- Mark as known for later use
+								return true -- This spellbookItem item is already known
+							end
 						end
 					end
 				end
